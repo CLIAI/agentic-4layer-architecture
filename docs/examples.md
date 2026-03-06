@@ -52,22 +52,35 @@ sequenceDiagram
 **Command** (`.claude/commands/ui-review.md`):
 
 ```markdown
-# UI Review
+---
+name: ui-review
+description: "Review a web UI for visual and accessibility issues"
+context: fork
+agent: browser-qa
+disable-model-invocation: true
+---
 
-Review the UI at the given URL for visual and accessibility issues.
+Review the UI at the given URL for visual and accessibility issues: $ARGUMENTS
 
-Use the `browser-qa` agent to analyze: $ARGUMENTS
+Capture screenshots at mobile (375px), tablet (768px), and desktop (1440px).
+Report findings with severity levels.
 ```
+
+> **How it works:** `context: fork` launches this as an isolated subagent.
+> `agent: browser-qa` specifies which subagent definition to use.
+> The subagent's `skills: [playwright-browser]` preloads the skill automatically.
+> This creates the full chain: Command → Agent → Skill → Scripts.
 
 **Agent** (`.claude/agents/browser-qa.md`):
 
 ```markdown
 ---
-model: claude-sonnet-4-6
-allowed_tools:
-  - Bash
-  - Read
-  - Write
+name: browser-qa
+description: "Reviews web UIs for visual defects and accessibility"
+tools: Read, Write, Bash
+model: sonnet
+skills:
+  - playwright-browser
 ---
 
 # Browser QA Agent
@@ -91,18 +104,16 @@ Stop and report. Do not attempt workarounds.
 ---
 name: playwright-browser
 description: Capture browser screenshots using Playwright
-allowed_tools:
-  - Bash
-  - Read
+allowed-tools: Bash, Read
 ---
 
 # Playwright Browser Skill
 
 ## Setup
-Run `./setup.sh` to install Chromium.
+Run `${CLAUDE_SKILL_DIR}/scripts/setup.sh` to install Chromium.
 
 ## Capture
-Run `./capture.sh <url> <output-path>` to capture a full-page screenshot.
+Run `${CLAUDE_SKILL_DIR}/scripts/capture.sh <url> <output-path>` to capture a full-page screenshot.
 
 ## Cleanup
 Remove screenshot files after the agent has analyzed them.
