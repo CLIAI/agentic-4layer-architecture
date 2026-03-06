@@ -78,6 +78,13 @@ This invokes a [Command](.claude/commands/review-my-architecture.md) →
 pipeline that **audits your project** and asks Socratic questions about
 your design decisions. It doesn't give answers. It develops *your* understanding.
 
+**How the chain works technically:**
+
+* The command uses `context: fork` + `agent: socratic-reviewer` to launch a subagent
+* The subagent's `skills: [architecture-audit]` preloads the skill content
+* The skill references its bundled `scripts/scan-layers.sh`
+* Each layer delegates downward — no upward dependencies
+
 ---
 
 ## The Core Thesis
@@ -126,11 +133,12 @@ underlying primitives. Don't just read about it — build with it.
 
 ### Official Documentation
 
-* [Claude Code Overview](https://docs.anthropic.com/en/docs/claude-code) — start here
-* [Custom Slash Commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands) — Layer 4
-* [Custom Agents](https://docs.anthropic.com/en/docs/claude-code/agents) — Layer 3 (YAML frontmatter options are key!)
-* [Skills](https://docs.anthropic.com/en/docs/claude-code/skills) — Layer 2
-* [Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks) — The enforcement layer
+* [Claude Code Overview](https://code.claude.com/docs/en) — start here (also available as [llms.txt](https://code.claude.com/docs/llms.txt))
+* [Skills](https://code.claude.com/docs/en/skills) — Layer 4/2: Commands have been merged into skills. Use `context: fork` + `agent` to delegate to subagents
+* [Custom Subagents](https://code.claude.com/docs/en/sub-agents) — Layer 3: YAML frontmatter with `tools`, `skills`, `memory`, `hooks`
+* [Hooks](https://code.claude.com/docs/en/hooks) — The enforcement layer: nested format with `type: command`/`http`/`prompt`
+* [Agent Teams](https://code.claude.com/docs/en/agent-teams) — Multi-agent coordination across separate sessions
+* [Plugins](https://code.claude.com/docs/en/plugins) — Package and distribute skills, agents, and hooks
 
 ### Conceptual Foundation
 
