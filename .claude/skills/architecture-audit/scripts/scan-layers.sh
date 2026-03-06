@@ -79,9 +79,9 @@ if [ -d "$CLAUDE_DIR/agents" ]; then
         tools="$(extract_field "$f" "tools")"
         memory="$(extract_field "$f" "memory")"
 
-        # Check for deprecated field names
+        # Check for deprecated field names (only in frontmatter, between --- markers)
         has_allowed_tools="no"
-        if grep -q 'allowed_tools' "$f" 2>/dev/null; then
+        if sed -n '/^---$/,/^---$/p' "$f" 2>/dev/null | grep -q 'allowed_tools'; then
             has_allowed_tools="yes (DEPRECATED: use 'tools' instead)"
         fi
 
@@ -130,9 +130,9 @@ if [ -d "$CLAUDE_DIR/skills" ]; then
         context="$(extract_field "$skill_file" "context")"
         disable_model="$(extract_field "$skill_file" "disable-model-invocation")"
 
-        # Check for deprecated field names
+        # Check for deprecated field names (only in frontmatter)
         has_deprecated="no"
-        if grep -q 'allowed_tools' "$skill_file" 2>/dev/null; then
+        if sed -n '/^---$/,/^---$/p' "$skill_file" 2>/dev/null | grep -q 'allowed_tools'; then
             has_deprecated="yes (use 'allowed-tools' with hyphens)"
         fi
 
@@ -260,10 +260,17 @@ if [ -d "$CLAUDE_DIR/agents" ]; then
     done < <(find "$CLAUDE_DIR/agents" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null)
 fi
 
-# Check: deprecated field names
-if grep -rl 'allowed_tools' "$CLAUDE_DIR" 2>/dev/null | grep -q '.md'; then
-    echo "  DEPRECATED: Some files use 'allowed_tools' (use 'tools' for agents, 'allowed-tools' for skills)"
-    issues=$((issues + 1))
+# Check: deprecated field names in frontmatter of .md files
+found_deprecated=false
+while IFS= read -r -d '' mdfile; do
+    if sed -n '/^---$/,/^---$/p' "$mdfile" 2>/dev/null | grep -q 'allowed_tools'; then
+        found_deprecated=true
+        echo "  DEPRECATED: $(realpath --relative-to="$PROJECT_ROOT" "$mdfile") uses 'allowed_tools' in frontmatter"
+        issues=$((issues + 1))
+    fi
+done < <(find "$CLAUDE_DIR" -name '*.md' -type f -print0 2>/dev/null)
+if [ "$found_deprecated" = false ]; then
+    : # no deprecated fields found
 fi
 
 if [ "$issues" -eq 0 ]; then
