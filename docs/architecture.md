@@ -111,7 +111,7 @@ Skills are the **reuse layer**. When you find yourself repeating the same sequen
 
 * **Atomic** -- a skill does one coherent thing (capture a screenshot, run a lint pass, commit code)
 * **Self-contained** -- all resources a skill needs live in its directory
-* **YAML frontmatter** -- declares metadata: `name`, `description`, `allowed_tools`, and constraints
+* **YAML frontmatter** -- declares metadata: `name`, `description`, `allowed-tools`, and constraints (see [official skill docs](https://code.claude.com/docs/en/skills))
 * **Commits own work** -- if a skill produces changes, it should commit them (not leave it for the agent)
 * **Naming convention** -- `{domain}-{action}`: `playwright-browser`, `code-review`, `git-commit`
 * **Bundled scripts** -- any mechanical steps live as scripts in the skill's directory, not inline in the SKILL.md
@@ -122,19 +122,16 @@ Skills are the **reuse layer**. When you find yourself repeating the same sequen
 ---
 name: playwright-browser
 description: Capture browser screenshots and run visual QA using Playwright
-allowed_tools:
-  - Bash
-  - Read
-  - Write
+allowed-tools: Bash, Read, Write
 ---
 
 # Playwright Browser Skill
 
 ## Setup
-Run `./setup.sh` to install Chromium via Playwright.
+Run `${CLAUDE_SKILL_DIR}/scripts/setup.sh` to install Chromium via Playwright.
 
 ## Usage
-1. Call `./capture.sh <url>` to capture a screenshot
+1. Call `${CLAUDE_SKILL_DIR}/scripts/capture.sh <url>` to capture a screenshot
 2. Read the screenshot file to perform visual analysis
 3. Report findings in structured format
 
@@ -143,6 +140,9 @@ Run `./setup.sh` to install Chromium via Playwright.
 * Clean up screenshot files after analysis
 * Never navigate to URLs not provided by the caller
 ```
+
+> **Note:** `allowed-tools` uses hyphens (not underscores). `${CLAUDE_SKILL_DIR}` resolves to the skill's directory at runtime.
+> See [official skill docs](https://code.claude.com/docs/en/skills) for all frontmatter fields.
 
 ### Connections to Other Layers
 
@@ -173,7 +173,7 @@ Agents are where **judgment lives**. A script cannot decide whether a UI looks b
 
 ### Design Principles
 
-* **YAML frontmatter** -- declares `model`, `allowed_tools`, behavioral directives
+* **YAML frontmatter** -- declares `model`, `tools`, `skills`, `memory`, and behavioral directives (see [official subagent docs](https://code.claude.com/docs/en/sub-agents))
 * **Stop on error** -- if a skill fails, the agent stops and reports rather than plowing ahead
 * **Goal-oriented** -- an agent has a clear mission stated in its description
 * **Delegates to skills** -- agents never implement low-level operations themselves; they invoke skills
@@ -184,13 +184,12 @@ Agents are where **judgment lives**. A script cannot decide whether a UI looks b
 
 ```markdown
 ---
-model: claude-sonnet-4-6
-allowed_tools:
-  - Bash
-  - Read
-  - Write
-  - Glob
-  - Grep
+name: browser-qa
+description: "Reviews web UIs for visual defects, accessibility issues, and layout problems"
+tools: Read, Write, Bash, Glob, Grep
+model: sonnet
+skills:
+  - playwright-browser
 ---
 
 # Browser QA Agent
@@ -212,6 +211,11 @@ accessibility issues, and layout problems.
 ## Output Format
 Report findings as a markdown checklist with severity levels.
 ```
+
+> **Note:** The `tools` field (not `allowed_tools`) controls subagent capabilities.
+> The `skills` field preloads skill content into the subagent's context at startup.
+> Model uses aliases: `sonnet`, `opus`, `haiku`, or `inherit`.
+> See [official subagent docs](https://code.claude.com/docs/en/sub-agents) for all frontmatter fields.
 
 ### Connections to Other Layers
 
@@ -280,24 +284,32 @@ Target: $ARGUMENTS
 ### Where
 
 ```json
-// .claude/settings.json
+// .claude/settings.json (current format as of v2.1+)
 {
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "python3 .claude/hooks/validate-bash.py"
+        "hooks": [
+          { "type": "command", "command": "python3 .claude/hooks/validate-bash.py" }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Write",
-        "command": "bash .claude/hooks/post-write-lint.sh"
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/post-write-lint.sh" }
+        ]
       }
     ]
   }
 }
 ```
+
+> **Note:** Hooks now use a nested format with `hooks` array and `type` field.
+> Supported types: `command` (shell), `http` (HTTP endpoint), `prompt` (LLM).
+> See [official hooks reference](https://code.claude.com/docs/en/hooks) for details.
 
 ### Why
 
@@ -312,18 +324,34 @@ Hooks are the **immune system** of the architecture. They enforce rules that no 
 
 ### Hook Lifecycle Events
 
-* `PreToolUse` -- fires before a tool executes; can block the action
-* `PostToolUse` -- fires after a tool succeeds; can trigger follow-up actions
-* `PostToolUseFailure` -- fires when a tool fails
-* `Notification` -- fires on system notifications
-* `Stop` -- fires when the main agent stops
-* `SubagentStop` -- fires when a subagent completes
-* `SubagentStart` -- fires when a subagent begins
-* `PreCompact` -- fires before context compaction
-* `SessionStart` -- fires when a session begins
+See [official hooks reference](https://code.claude.com/docs/en/hooks) for full details and JSON schemas.
+
+**Tool lifecycle:**
+
+* `PreToolUse` -- fires *before* a tool executes; can block, allow, or modify the call
+* `PostToolUse` -- fires *after* a tool succeeds; can trigger follow-up actions
+* `PostToolUseFailure` -- fires when a tool call fails
+
+**Agent lifecycle:**
+
+* `SubagentStart` -- fires when a subagent begins execution (matcher: agent type name)
+* `SubagentStop` -- fires when a subagent completes (matcher: agent type name)
+
+**Session lifecycle:**
+
+* `SessionStart` -- fires when a Claude Code session begins
 * `SessionEnd` -- fires when a session ends
+
+**User interaction:**
+
 * `UserPromptSubmit` -- fires when the user submits a prompt
 * `PermissionRequest` -- fires when a tool requests elevated permissions
+
+**Other events:**
+
+* `Stop` -- fires when the main agent stops execution
+* `Notification` -- fires on system notifications
+* `PreCompact` -- fires before context window compaction
 
 ### Connections to Other Layers
 
