@@ -67,7 +67,7 @@ Each of the four layers maps to a set of concepts you need to genuinely understa
 
 **Configuration layer** -- You need to know:
 
-* What YAML frontmatter options exist (allowed_tools, model, temperature, etc.)
+* What YAML frontmatter options exist (`tools`, `skills`, `memory` for agents; `allowed-tools`, `context`, `agent` for skills)
 * How CLAUDE.md and AGENTS.md inheritance works across directories
 * What makes instructions effective vs. what gets ignored
 * How context windows work and why conciseness matters
@@ -91,7 +91,7 @@ Each of the four layers maps to a set of concepts you need to genuinely understa
 * How agent YAML configuration works (model, tools, instructions)
 * How multi-agent coordination happens (teams, message passing)
 * When to delegate to a sub-agent vs. do it inline
-* How to scope agent capabilities with allowed_tools
+* How to scope agent capabilities with `tools`/`disallowedTools` and preload skills
 
 You learn these by reading the official Claude Code documentation. Not by copying someone's config. Not by watching a speed-run. By sitting down with the docs and understanding what each option does, when to use it, and what the tradeoffs are.
 
@@ -103,7 +103,7 @@ Theory without practice is philosophy. Practice without theory is flailing. You 
 
 Start here:
 
-* **Read the official Claude Code docs.** Seriously. All of them. The sections on YAML frontmatter options (allowed_tools, model, temperature), hook events and matchers, skill file format, agent configuration, and team orchestration. Read them until you can explain them to someone else.
+* **Read the official Claude Code docs** at [code.claude.com/docs](https://code.claude.com/docs/en). Seriously. All of them. The sections on [skill frontmatter](https://code.claude.com/docs/en/skills) (`allowed-tools`, `context`, `agent`), [subagent frontmatter](https://code.claude.com/docs/en/sub-agents) (`tools`, `skills`, `memory`), [hook events and matchers](https://code.claude.com/docs/en/hooks), and [team orchestration](https://code.claude.com/docs/en/agent-teams). Read them until you can explain them to someone else.
 
 * **Build one layer at a time.** Don't try to set up all four layers in an afternoon. Start with configuration. Get your AGENTS.md right. Live with it for a week. Then add a hook. Then a skill. Then try orchestration. Each layer should feel like a natural extension of your understanding, not a bolt-on you copied from a tutorial.
 
