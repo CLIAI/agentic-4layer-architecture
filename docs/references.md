@@ -30,28 +30,38 @@ Links, sources, and further reading for the 4-layer agentic architecture pattern
 
 ## Official Claude Code Documentation
 
-* **Claude Code Overview**: [docs.anthropic.com/en/docs/claude-code](https://docs.anthropic.com/en/docs/claude-code)
-  * Main documentation hub for Claude Code features and configuration
+* **Claude Code Overview**: [code.claude.com/docs](https://code.claude.com/docs/en)
+  * Main documentation hub -- also available as [llms.txt](https://code.claude.com/docs/llms.txt) for AI consumption
 
-### Specific Sections
+### Specific Sections (with frontmatter field references)
 
-* **Commands** -- User-facing `/slash-commands` defined in `.claude/commands/*.md`
-  * How to define custom commands with `$ARGUMENTS` placeholder
-  * Project-level vs user-level command directories
+* **Skills** -- [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
+  * Commands and skills are now merged: `.claude/commands/` and `.claude/skills/` both create `/slash-commands`
+  * YAML frontmatter fields: `name`, `description`, `argument-hint`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `model`, `context`, `agent`, `hooks`
+  * String substitutions: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_SKILL_DIR}`
+  * `context: fork` + `agent: <name>` runs the skill in an isolated subagent
+  * Dynamic context injection with `!`command\`\` syntax
 
-* **Agents** -- Sub-agents defined in `.claude/agents/*.md`
-  * YAML frontmatter: `model`, `allowed_tools`, behavioral directives
-  * How agents are invoked via the `Agent` tool
+* **Subagents** -- [code.claude.com/docs/en/sub-agents](https://code.claude.com/docs/en/sub-agents)
+  * YAML frontmatter fields: `name`, `description`, `tools`, `disallowedTools`, `model`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `isolation`
+  * `skills` field preloads skill content into subagent context at startup
+  * `memory` field enables persistent cross-session learning (`user`, `project`, or `local` scope)
+  * Model aliases: `sonnet`, `opus`, `haiku`, `inherit`
+  * Tool restriction: `Agent(worker, researcher)` limits which subagents can be spawned
 
-* **Skills** -- Reusable atomic operations in `.claude/skills/*/SKILL.md`
-  * YAML frontmatter for metadata and tool restrictions
-  * Bundling scripts alongside SKILL.md
-  * How skills are discovered and invoked by agents
+* **Hooks** -- [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks)
+  * Nested format: each entry has `matcher` and `hooks` array with `type` field
+  * Hook types: `command` (shell), `http` (HTTP endpoint), `prompt` (LLM-based)
+  * Exit codes: 0=allow, 2=block (stderr fed back to Claude for self-correction)
+  * 12+ lifecycle events: PreToolUse, PostToolUse, SubagentStart, SubagentStop, SessionStart, etc.
+  * Hooks can be defined in settings.json, subagent frontmatter, or skill frontmatter
 
-* **Hooks** -- Lifecycle event handlers in `.claude/settings.json`
-  * All 12+ hook events (PreToolUse, PostToolUse, etc.)
-  * Matcher patterns for targeting specific tools
-  * Hook scripts receive JSON on stdin and return JSON on stdout
+* **Agent Teams** -- [code.claude.com/docs/en/agent-teams](https://code.claude.com/docs/en/agent-teams)
+  * Multi-agent coordination across separate sessions
+  * For parallel work that exceeds single-session context
+
+* **Plugins** -- [code.claude.com/docs/en/plugins](https://code.claude.com/docs/en/plugins)
+  * Package and distribute skills, agents, and hooks as installable plugins
 
 ---
 
