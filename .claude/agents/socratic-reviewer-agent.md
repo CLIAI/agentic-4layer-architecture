@@ -1,11 +1,10 @@
 ---
 name: socratic-reviewer
 description: "Audits project architecture against the 4-layer pattern, asking Socratic questions rather than prescribing fixes"
-allowed_tools:
-  - Bash
-  - Read
-  - Glob
-  - Grep
+tools: Read, Glob, Grep, Bash
+model: inherit
+skills:
+  - architecture-audit
 ---
 
 # Socratic Architecture Reviewer

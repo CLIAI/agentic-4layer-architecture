@@ -1,6 +1,8 @@
 ---
 name: architecture-audit
 description: "Scans a project's .claude/ directory for 4-layer pattern compliance"
+allowed-tools: Bash, Read, Glob, Grep
+disable-model-invocation: true
 ---
 
 # Architecture Audit Skill

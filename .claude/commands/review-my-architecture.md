@@ -1,4 +1,12 @@
-Review the architecture of this project (or $ARGUMENTS if specified) using the @socratic-reviewer-agent.
+---
+name: review-my-architecture
+description: "Review project architecture against the 4-layer pattern using Socratic questioning"
+context: fork
+agent: socratic-reviewer
+disable-model-invocation: true
+---
+
+Review the architecture of this project (or $ARGUMENTS if specified) using the @socratic-reviewer agent.
 
 Focus on 4-layer compliance: Commands -> Agents -> Skills -> Scripts + Hooks.
 
