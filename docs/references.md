@@ -65,6 +65,40 @@ Links, sources, and further reading for the 4-layer agentic architecture pattern
 
 ---
 
+## IndyDevDan (disler) — Real-World Implementations
+
+IndyDevDan (Dan Disler, [github.com/disler](https://github.com/disler)) is the primary practitioner whose public demonstrations crystallized the 4-layer pattern.
+
+### Canonical Implementations
+
+* **[disler/bowser](https://github.com/disler/bowser)** — The canonical 4-layer implementation
+  * Agent (`playwright-bowser-agent.md`) with `skills: [playwright-bowser]` and `model: opus`
+  * Skill (`playwright-bowser/SKILL.md`) with `allowed-tools: Bash` and bundled scripts
+  * Commands as thin orchestration entry points
+  * Shows the full Command → Agent → Skill → Script chain in production
+
+* **[disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery)** — Comprehensive hook system (3.2k+ stars)
+  * All 13 hook lifecycle events demonstrated
+  * Agents and commands showing the pattern
+  * Team-based multi-agent coordination examples
+
+* **[disler/claude-code-hooks-multi-agent-observability](https://github.com/disler/claude-code-hooks-multi-agent-observability)** — Multi-agent real-time observability
+  * Skills integrated with observability hooks
+  * Real-time monitoring of agent execution
+
+* **[disler/claude-code-damage-control](https://github.com/disler/claude-code-damage-control)** — Security-focused skill
+  * SKILL.md + hook wiring for safety enforcement
+  * Shows how hooks and skills work together as guardrails
+
+* **[disler/claude-code-is-programmable](https://github.com/disler/claude-code-is-programmable)** — Programmable Claude Code patterns
+  * Foundational patterns for treating Claude Code as a programmable system
+
+### VSCode Snippets
+
+* **[Gist: VSCode snippets for skills/subagents/commands](https://gist.github.com/disler/d9f1285892b9faf573a0699aad70658f)** — Quick-start templates for creating `.claude/` files
+
+---
+
 ## Public Frameworks and Tools
 
 ### claude-flow

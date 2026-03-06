@@ -155,6 +155,7 @@ agentic-4layer-architecture/
 ├── AGENTS.md                          ← Instructions for AI agents in this repo
 ├── docs/
 │   ├── architecture.md                ← Deep dive: the 4 layers + hooks
+│   ├── wiring-the-chain.md            ← HOW each layer delegates to the next (frontmatter fields)
 │   ├── philosophy.md                  ← Cognitive horizon, not cognitive offloading
 │   ├── examples.md                    ← Concrete pattern applications
 │   ├── hooks-as-guardrails.md         ← Hooks deep dive
