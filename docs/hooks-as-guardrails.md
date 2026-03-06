@@ -90,38 +90,60 @@ Hooks are defined in `.claude/settings.json`:
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "python3 .claude/hooks/validate-bash.py"
+        "hooks": [
+          { "type": "command", "command": "python3 .claude/hooks/validate-bash.py" }
+        ]
       },
       {
         "matcher": "Write",
-        "command": "python3 .claude/hooks/validate-write-path.py"
+        "hooks": [
+          { "type": "command", "command": "python3 .claude/hooks/validate-write-path.py" }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Write",
-        "command": "bash .claude/hooks/post-write-lint.sh"
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/post-write-lint.sh" }
+        ]
       }
     ],
     "Stop": [
       {
-        "command": "bash .claude/hooks/cleanup-screenshots.sh"
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/cleanup-screenshots.sh" }
+        ]
       }
     ],
     "SessionStart": [
       {
-        "command": "bash .claude/hooks/check-prerequisites.sh"
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/check-prerequisites.sh" }
+        ]
       }
     ]
   }
 }
 ```
 
+> **Format note:** Each hook entry uses a nested `hooks` array with `type` field.
+> Supported types: `command` (shell script), `http` (HTTP endpoint), `prompt` (LLM-based).
+> See [official hooks reference](https://code.claude.com/docs/en/hooks) for the full schema.
+
 ### Matcher Patterns
 
 * **Exact tool name**: `"Bash"`, `"Write"`, `"Read"`, `"Edit"`
+* **Regex patterns**: `"Edit|Write"` matches either tool
+* **Agent type name**: For `SubagentStart`/`SubagentStop`, matcher targets agent names
 * **No matcher**: hook fires for all tools (or for the event itself if non-tool event)
 * Multiple hooks can fire for the same event -- they execute in order
+
+### Exit Code Behavior
+
+* **Exit 0**: Allow the action (for `PreToolUse`) or success (for other hooks)
+* **Exit 2**: Block the action; stderr message is fed back to Claude for self-correction
+* **Non-zero (other)**: Hook failure; behavior depends on the event type
 
 ---
 
