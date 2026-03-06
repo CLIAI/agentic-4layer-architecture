@@ -204,7 +204,7 @@ one pipeline?" question grows your design sense.
 IndyDevDan didn't become effective with Claude Code by copying someone's
 `.claude/` directory. He became effective by **understanding the primitives
 deeply** — reading the docs, experimenting with frontmatter options,
-discovering what `allowed_tools` does to agent behavior, learning when
+discovering what `tools` and `skills` do to agent behavior, learning when
 hooks are the right tool vs when skills are sufficient.
 
 That's the path. There are no shortcuts worth taking.
