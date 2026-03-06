@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# scan-layers.sh -- Discover 4-layer architecture artifacts
+# scan-layers.sh -- Discover 4-layer architecture artifacts and validate wiring
 # Usage: ./scan-layers.sh [project-root]
-# Output: structured text report of discovered artifacts
+# Output: structured text report of discovered artifacts and potential issues
 #
 # This script is MECHANICAL -- no AI reasoning, just filesystem discovery.
 # Testable standalone: ./scan-layers.sh /path/to/project
@@ -18,18 +18,45 @@ echo "Project: $PROJECT_ROOT"
 echo "========================================"
 echo ""
 
-# --- Layer 1: Commands ---
+# --- Helper: extract YAML frontmatter field ---
+extract_field() {
+    local file="$1" field="$2"
+    # Extract value from YAML frontmatter (between --- markers)
+    sed -n '/^---$/,/^---$/p' "$file" 2>/dev/null | grep -E "^${field}:" | sed "s/^${field}:[[:space:]]*//" | tr -d '"' || true
+}
+
+# --- Helper: extract YAML list items ---
+extract_list() {
+    local file="$1" field="$2"
+    sed -n '/^---$/,/^---$/p' "$file" 2>/dev/null | sed -n "/^${field}:/,/^[^ -]/p" | grep -E '^\s*-\s' | sed 's/^\s*-\s*//' | tr -d '"' || true
+}
+
+# --- Layer 4: Commands ---
 echo "--- COMMANDS (.claude/commands/*.md) ---"
 if [ -d "$CLAUDE_DIR/commands" ]; then
     CMD_FILES=()
     while IFS= read -r -d '' f; do
         CMD_FILES+=("$f")
-    done < <(find "$CLAUDE_DIR/commands" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | sort -z)
+    done < <(find "$CLAUDE_DIR/commands" -maxdepth 2 -name '*.md' -type f -print0 2>/dev/null | sort -z)
     echo "Count: ${#CMD_FILES[@]}"
     for f in "${CMD_FILES[@]}"; do
-        name="$(basename "$f")"
+        name="$(basename "$f" .md)"
         lines="$(wc -l < "$f")"
+        context="$(extract_field "$f" "context")"
+        agent="$(extract_field "$f" "agent")"
         echo "  * $name ($lines lines)"
+        if [ -n "$context" ]; then
+            echo "    context: $context"
+        fi
+        if [ -n "$agent" ]; then
+            echo "    agent: $agent"
+            # Check if referenced agent exists
+            if [ ! -f "$CLAUDE_DIR/agents/${agent}.md" ] && [ ! -f "$CLAUDE_DIR/agents/${agent}-agent.md" ]; then
+                echo "    WARNING: referenced agent '$agent' not found in .claude/agents/"
+            fi
+        elif [ "$lines" -gt 15 ]; then
+            echo "    NOTE: >15 lines without context:fork -- consider delegating to an agent"
+        fi
     done
 else
     echo "Count: 0"
@@ -37,7 +64,7 @@ else
 fi
 echo ""
 
-# --- Layer 2: Agents ---
+# --- Layer 3: Agents ---
 echo "--- AGENTS (.claude/agents/*.md) ---"
 if [ -d "$CLAUDE_DIR/agents" ]; then
     AGENT_FILES=()
@@ -46,17 +73,41 @@ if [ -d "$CLAUDE_DIR/agents" ]; then
     done < <(find "$CLAUDE_DIR/agents" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | sort -z)
     echo "Count: ${#AGENT_FILES[@]}"
     for f in "${AGENT_FILES[@]}"; do
-        name="$(basename "$f")"
+        name="$(basename "$f" .md)"
         lines="$(wc -l < "$f")"
-        has_skill_ref="no"
-        if grep -qiE '(skill|SKILL\.md|skills/)' "$f" 2>/dev/null; then
-            has_skill_ref="yes"
+        model="$(extract_field "$f" "model")"
+        tools="$(extract_field "$f" "tools")"
+        memory="$(extract_field "$f" "memory")"
+
+        # Check for deprecated field names
+        has_allowed_tools="no"
+        if grep -q 'allowed_tools' "$f" 2>/dev/null; then
+            has_allowed_tools="yes (DEPRECATED: use 'tools' instead)"
         fi
-        has_script_ref="no"
-        if grep -qiE '(script|\.sh\b|scripts/)' "$f" 2>/dev/null; then
-            has_script_ref="yes"
+
+        # Check skills references
+        skills_list="$(extract_list "$f" "skills")"
+        has_skills="no"
+        if [ -n "$skills_list" ]; then
+            has_skills="yes"
         fi
-        echo "  * $name ($lines lines, refs skills: $has_skill_ref, refs scripts: $has_script_ref)"
+
+        echo "  * $name ($lines lines)"
+        [ -n "$model" ] && echo "    model: $model"
+        [ -n "$tools" ] && echo "    tools: $tools"
+        [ "$has_allowed_tools" != "no" ] && echo "    allowed_tools: $has_allowed_tools"
+        [ -n "$memory" ] && echo "    memory: $memory"
+        echo "    skills: $has_skills"
+
+        # Validate skill references
+        if [ -n "$skills_list" ]; then
+            while IFS= read -r skill; do
+                skill="$(echo "$skill" | xargs)"  # trim
+                if [ ! -f "$CLAUDE_DIR/skills/${skill}/SKILL.md" ]; then
+                    echo "    WARNING: referenced skill '$skill' not found in .claude/skills/"
+                fi
+            done <<< "$skills_list"
+        fi
     done
 else
     echo "Count: 0"
@@ -64,7 +115,7 @@ else
 fi
 echo ""
 
-# --- Layer 3: Skills ---
+# --- Layer 2: Skills ---
 echo "--- SKILLS (.claude/skills/*/SKILL.md) ---"
 if [ -d "$CLAUDE_DIR/skills" ]; then
     SKILL_DIRS=()
@@ -74,6 +125,18 @@ if [ -d "$CLAUDE_DIR/skills" ]; then
     echo "Count: ${#SKILL_DIRS[@]}"
     for d in "${SKILL_DIRS[@]}"; do
         name="$(basename "$d")"
+        skill_file="$d/SKILL.md"
+        allowed_tools="$(extract_field "$skill_file" "allowed-tools")"
+        context="$(extract_field "$skill_file" "context")"
+        disable_model="$(extract_field "$skill_file" "disable-model-invocation")"
+
+        # Check for deprecated field names
+        has_deprecated="no"
+        if grep -q 'allowed_tools' "$skill_file" 2>/dev/null; then
+            has_deprecated="yes (use 'allowed-tools' with hyphens)"
+        fi
+
+        # Check bundled scripts
         has_scripts="no"
         script_count=0
         if [ -d "$d/scripts" ]; then
@@ -82,7 +145,12 @@ if [ -d "$CLAUDE_DIR/skills" ]; then
                 has_scripts="yes"
             fi
         fi
-        echo "  * $name (bundled scripts: $has_scripts, script count: $script_count)"
+
+        echo "  * $name (scripts: $has_scripts, count: $script_count)"
+        [ -n "$allowed_tools" ] && echo "    allowed-tools: $allowed_tools"
+        [ -n "$context" ] && echo "    context: $context"
+        [ -n "$disable_model" ] && echo "    disable-model-invocation: $disable_model"
+        [ "$has_deprecated" != "no" ] && echo "    DEPRECATED field: $has_deprecated"
     done
 else
     echo "Count: 0"
@@ -90,7 +158,7 @@ else
 fi
 echo ""
 
-# --- Layer 4: Scripts ---
+# --- Layer 1: Scripts ---
 echo "--- SCRIPTS (standalone scripts/) ---"
 SCRIPT_LOCATIONS=("$PROJECT_ROOT/scripts" "$CLAUDE_DIR/scripts")
 total_scripts=0
@@ -159,6 +227,50 @@ for doc in CLAUDE.md AGENTS.md README.md; do
 done
 echo ""
 
+# --- Wiring validation summary ---
+echo "--- WIRING VALIDATION ---"
+issues=0
+
+# Check: do commands reference agents that exist?
+if [ -d "$CLAUDE_DIR/commands" ]; then
+    while IFS= read -r -d '' f; do
+        agent="$(extract_field "$f" "agent")"
+        if [ -n "$agent" ]; then
+            if [ ! -f "$CLAUDE_DIR/agents/${agent}.md" ] && [ ! -f "$CLAUDE_DIR/agents/${agent}-agent.md" ]; then
+                echo "  BROKEN: Command '$(basename "$f" .md)' references agent '$agent' which doesn't exist"
+                issues=$((issues + 1))
+            fi
+        fi
+    done < <(find "$CLAUDE_DIR/commands" -maxdepth 2 -name '*.md' -type f -print0 2>/dev/null)
+fi
+
+# Check: do agents reference skills that exist?
+if [ -d "$CLAUDE_DIR/agents" ]; then
+    while IFS= read -r -d '' f; do
+        skills_list="$(extract_list "$f" "skills")"
+        if [ -n "$skills_list" ]; then
+            while IFS= read -r skill; do
+                skill="$(echo "$skill" | xargs)"
+                if [ -n "$skill" ] && [ ! -f "$CLAUDE_DIR/skills/${skill}/SKILL.md" ]; then
+                    echo "  BROKEN: Agent '$(basename "$f" .md)' references skill '$skill' which doesn't exist"
+                    issues=$((issues + 1))
+                fi
+            done <<< "$skills_list"
+        fi
+    done < <(find "$CLAUDE_DIR/agents" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null)
+fi
+
+# Check: deprecated field names
+if grep -rl 'allowed_tools' "$CLAUDE_DIR" 2>/dev/null | grep -q '.md'; then
+    echo "  DEPRECATED: Some files use 'allowed_tools' (use 'tools' for agents, 'allowed-tools' for skills)"
+    issues=$((issues + 1))
+fi
+
+if [ "$issues" -eq 0 ]; then
+    echo "  All wiring checks passed!"
+fi
+echo ""
+
 echo "========================================"
-echo "Scan complete."
+echo "Scan complete. Issues found: $issues"
 echo "========================================"

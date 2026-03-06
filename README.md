@@ -162,20 +162,26 @@ agentic-4layer-architecture/
 │   └── references.md                  ← All links, resources, further reading
 ├── .claude/
 │   ├── commands/
-│   │   └── review-my-architecture.md  ← Example: thin orchestration command
+│   │   ├── review-my-architecture.md  ← Pipeline 1: Socratic architecture review
+│   │   └── explain-layer.md           ← Pipeline 2: Layer classification guide
 │   ├── agents/
-│   │   └── socratic-reviewer-agent.md ← Example: agent that asks, doesn't tell
+│   │   ├── socratic-reviewer-agent.md ← Asks questions, never prescribes (memory-enabled)
+│   │   └── layer-guide-agent.md       ← Explains where files fit in the 4 layers
 │   └── skills/
-│       └── architecture-audit/
-│           ├── SKILL.md               ← Example: atomic audit operation
-│           └── scripts/
-│               └── scan-layers.sh     ← Example: mechanical discovery script
+│       ├── architecture-audit/
+│       │   ├── SKILL.md               ← Atomic audit with frontmatter validation
+│       │   └── scripts/
+│       │       └── scan-layers.sh     ← Mechanical discovery + wiring validation
+│       └── layer-explainer/
+│           └── SKILL.md               ← Layer classification knowledge
 └── LICENSE
 ```
 
 Every file in `.claude/` is both **documentation** and **working code**.
-Run `/review-my-architecture` to see the 4-layer pattern in action —
-*on this very repo*.
+Two pipelines demonstrate the pattern in action:
+
+* `/review-my-architecture` — Socratic audit of your project's 4-layer compliance
+* `/explain-layer <file>` — Explains which layer a file belongs to and traces the chain
 
 ---
 
