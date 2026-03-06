@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+vendor/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Rust
+target/
+
+# Go
+vendor/
+
+# Java
+*.class
+
+# Build artifacts
+out/
+build/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Temporary
+tmp/
+*.tmp
+*.log
+
+# Environment
+.env
+.env.local
