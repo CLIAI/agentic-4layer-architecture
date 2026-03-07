@@ -97,6 +97,11 @@ IndyDevDan (Dan Disler, [github.com/disler](https://github.com/disler)) is the p
 
 * **[Gist: VSCode snippets for skills/subagents/commands](https://gist.github.com/disler/d9f1285892b9faf573a0699aad70658f)** — Quick-start templates for creating `.claude/` files
 
+### Secondary References
+
+* **[Jon Roosevelt: Skills Are Just the Beginning: The 4-Layer Agent Stack](https://jonroosevelt.com/blog/agent-stack-layers)** — Credits IndyDevDan's Bowser breakdown as the source for the 4-layer framework. Independent validation of the pattern.
+* **[Zenn: context:fork vs skills field](https://zenn.dev/trust_delta/articles/claude-code-skills-subagents-approaches?locale=en)** — Comparison of the two wiring approaches (lazy vs eager loading)
+
 ---
 
 ## Public Frameworks and Tools
@@ -159,3 +164,10 @@ The 4-layer architecture is grounded in established software engineering princip
 * **CLIAI GitHub Organization**: [github.com/CLIAI](https://github.com/CLIAI) -- Community explorations of Claude Code agentic patterns
 * **Anthropic Documentation**: [docs.anthropic.com](https://docs.anthropic.com) -- Official documentation for all Claude products
 * **Mermaid Diagrams**: [mermaid.js.org](https://mermaid.js.org) -- Diagramming tool used throughout this documentation for architecture visualizations
+
+---
+
+## Tooling
+
+* **Settings JSON Schema**: [json.schemastore.org/claude-code-settings.json](https://json.schemastore.org/claude-code-settings.json) -- IDE autocomplete for `.claude/settings.json`
+* **Anthropic Public Skills Repository**: [github.com/anthropics/skills](https://github.com/anthropics/skills) -- Official collection of reusable skills

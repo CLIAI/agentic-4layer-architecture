@@ -175,6 +175,58 @@ Exit codes:
 
 ---
 
+## Additional Discoveries from Deep Research
+
+### 18 Hook Events (Not 12)
+
+The official docs list **18 hook events**, not the 12 we originally documented. Additional events:
+
+* `TeammateIdle` — Agent teams only
+* `TaskCompleted` — Task completion notification
+* `InstructionsLoaded` — Fires per CLAUDE.md file load (debugging)
+* `ConfigChange` — Settings/skills changes (matcher: `user_settings`/`project_settings`/etc.)
+* `WorktreeCreate` / `WorktreeRemove` — Git worktree lifecycle
+
+### 4 Hook Handler Types (Not Just Command)
+
+* `type: "command"` — Shell script (original)
+* `type: "http"` — POST JSON to HTTP endpoint (useful for observability)
+* `type: "prompt"` — Single-turn LLM eval (Haiku default)
+* `type: "agent"` — Multi-turn subagent with tools (up to 50 turns)
+
+### `context: fork` vs `skills:` — Two Wiring Patterns
+
+IndyDevDan uses BOTH patterns for different purposes:
+
+| Pattern | Loading | Use case |
+|---------|---------|----------|
+| `context: fork` + `agent:` in skill | Lazy (content = task prompt) | User-invoked workflows |
+| `skills: [...]` in agent frontmatter | Eager (full content at startup) | Agent needs domain knowledge |
+
+He prefers `skills:` field in `bowser` because agents need browser expertise injected at spawn time for parallelism to work reliably.
+
+### Known Bug: `skills:` Not Preloaded for Team-Spawned Teammates
+
+GitHub Issue [#29441](https://github.com/anthropics/claude-code/issues/29441): When agents are spawned as team teammates, the `skills:` frontmatter field is **not preloaded**. This affects agent teams but not regular subagent spawning.
+
+### IndyDevDan's Actual Layer Numbering
+
+Interestingly, Dan numbers his layers **bottom-up** (Skill=1, Agent=2, Command=3, Justfile=4), while our repo numbers them **top-down** (Command=4, Agent=3, Skill=2, Script=1). Both are valid — the key insight is the separation, not the numbering.
+
+### Jon Roosevelt's Blog Post
+
+[jonroosevelt.com/blog/agent-stack-layers](https://jonroosevelt.com/blog/agent-stack-layers) credits "IndyDevDan's breakdown of Bowser" as the direct source for the 4-layer framework. This serves as a secondary public reference for the pattern.
+
+### `async: true` for Non-Blocking Hooks (Jan 2026)
+
+Hooks support `async: true` field to run without blocking Claude's execution. Useful for telemetry/observability hooks that shouldn't slow down the workflow.
+
+### Settings JSON Schema Available
+
+`https://json.schemastore.org/claude-code-settings.json` provides IDE autocomplete for `.claude/settings.json`. Worth mentioning in docs.
+
+---
+
 ## Implications for This Repository
 
 1. All frontmatter field names were corrected across all files
@@ -182,3 +234,6 @@ Exit codes:
 3. scan-layers.sh now validates frontmatter and wiring correctness
 4. The pattern is confirmed by both official docs and IndyDevDan's production use
 5. The depth-2 limitation is documented but doesn't affect the 4-layer model
+6. Hook documentation should be expanded to cover all 18 events and 4 handler types
+7. The `async: true` and `type: "agent"` hook capabilities open new patterns
+8. The `skills:` vs `context: fork` distinction deserves its own section
