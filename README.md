@@ -2,9 +2,6 @@
 
 **Commands → Agents → Skills → Scripts (+Hooks)**
 
-> *"Your brain becomes the bottleneck — AI waits for YOU to catch up."*
-> — David Shapiro, on [Cognitive Horizons](https://gist.github.com/gwpl/748b6b9988a575dafc50cf54c258bed5)
-
 This repository documents a **layered architecture pattern** for orchestrating
 AI-assisted workflows in [Claude Code](https://code.claude.com/docs/en).
 It's not a framework to install — it's a **thinking framework** to internalize.
@@ -47,10 +44,7 @@ Not because it makes AI do more for you. Because it makes **you think more clear
 
 Every time you decide "this belongs in a skill, not a script" or "this command
 is too thick — the logic should be in the agent" — you're exercising
-architectural judgment. You're **extending your cognitive horizon**, not
-offloading cognition to a machine.
-
-> AI as a gym for the mind: spotter, not replacement.
+architectural judgment.
 
 The developers who thrive with AI agents won't be the ones who copy-paste prompts.
 They'll be the ones who **design systems** — who understand separation of concerns
@@ -144,8 +138,8 @@ underlying primitives. Don't just read about it — build with it.
 
 ### Conceptual Foundation
 
-* **[Extending Cognitive Horizon](https://gist.github.com/gwpl/748b6b9988a575dafc50cf54c258bed5)** — David Shapiro on why AI should expand what you can think, not replace thinking
-* [docs/philosophy.md](docs/philosophy.md) — our take on cognitive growth vs cognitive offloading
+* **[Cognitive Horizons](https://gist.github.com/gwpl/748b6b9988a575dafc50cf54c258bed5)** — David Shapiro's "I was the bottleneck, not the AI" (transcript, glossary, diagrams)
+* [docs/philosophy.md](docs/philosophy.md) — our take on designing with AI, not delegating to it
 
 ---
 
@@ -158,7 +152,7 @@ agentic-4layer-architecture/
 ├── docs/
 │   ├── architecture.md                ← Deep dive: the 4 layers + hooks
 │   ├── wiring-the-chain.md            ← HOW each layer delegates to the next (frontmatter fields)
-│   ├── philosophy.md                  ← Cognitive horizon, not cognitive offloading
+│   ├── philosophy.md                  ← Why design matters more than prompting
 │   ├── examples.md                    ← Concrete pattern applications
 │   ├── hooks-as-guardrails.md         ← Hooks deep dive
 │   └── references.md                  ← All links, resources, further reading
@@ -197,7 +191,7 @@ If it doesn't yet — the [architecture deep-dive](docs/architecture.md) will ge
 
 ---
 
-## A Word About "Cognitive Offloading"
+## A Word About Copy-Pasting
 
 It's tempting to use this architecture to just... let AI do everything.
 Copy-paste a command structure, never think about why the layers exist,
@@ -217,11 +211,6 @@ discovering what `tools` and `skills` do to agent behavior, learning when
 hooks are the right tool vs when skills are sufficient.
 
 That's the path. There are no shortcuts worth taking.
-
-> *"Cognitive horizons represent the scope of what a mind can conceptualize.
-> AI's role is to act as a cognitive telescope, expanding horizons —
-> not replacing the observer."*
-
 See [docs/philosophy.md](docs/philosophy.md) for the full argument.
 
 ---
