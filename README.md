@@ -6,8 +6,10 @@
 > — David Shapiro, on [Cognitive Horizons](https://gist.github.com/gwpl/748b6b9988a575dafc50cf54c258bed5)
 
 This repository documents a **layered architecture pattern** for orchestrating
-AI-assisted workflows in [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+AI-assisted workflows in [Claude Code](https://code.claude.com/docs/en).
 It's not a framework to install — it's a **thinking framework** to internalize.
+
+> **Want a compact reference?** See the [handy gist](https://gist.github.com/gwpl/02bcacb9a11ebd6c61bb7fd40f553bc3) — a condensed version you can feed directly to your AI agent.
 
 The architecture separates *what to do* from *how to orchestrate it* from
 *how to do each step* from *mechanical execution*. Four layers. Each with a
