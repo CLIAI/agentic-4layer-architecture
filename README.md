@@ -136,6 +136,10 @@ underlying primitives. Don't just read about it — build with it.
 * [Agent Teams](https://code.claude.com/docs/en/agent-teams) — Multi-agent coordination across separate sessions
 * [Plugins](https://code.claude.com/docs/en/plugins) — Package and distribute skills, agents, and hooks
 
+### Ecosystem & Distribution
+
+* **[Building, Bundling, and Distributing](docs/ecosystem.md)** — From local components to plugins, marketplaces, and cross-harness portability
+
 ### Conceptual Foundation
 
 * **[Cognitive Horizons](https://gist.github.com/gwpl/748b6b9988a575dafc50cf54c258bed5)** — David Shapiro's "I was the bottleneck, not the AI" (transcript, glossary, diagrams)
@@ -155,6 +159,7 @@ agentic-4layer-architecture/
 │   ├── philosophy.md                  ← Why design matters more than prompting
 │   ├── examples.md                    ← Concrete pattern applications
 │   ├── hooks-as-guardrails.md         ← Hooks deep dive
+│   ├── ecosystem.md                   ← Building, bundling, distributing as plugins
 │   └── references.md                  ← All links, resources, further reading
 ├── .claude/
 │   ├── commands/

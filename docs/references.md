@@ -62,6 +62,7 @@ Links, sources, and further reading for the 4-layer agentic architecture pattern
 
 * **Plugins** -- [code.claude.com/docs/en/plugins](https://code.claude.com/docs/en/plugins)
   * Package and distribute skills, agents, and hooks as installable plugins
+  * See also: [docs/ecosystem.md](ecosystem.md) — implementation path from components to marketplaces
 
 ---
 
