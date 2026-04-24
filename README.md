@@ -19,9 +19,6 @@ harder about the right abstraction level.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  Bonus  : Guardrails   (e.g. Hooks — .claude/settings.json)          │
-│           Cross-cutting enforcement. A dimension, not a layer.       │
-├──────────────────────────────────────────────────────────────────────┤
 │  Layer 4: Launchers    (e.g. Justfile / Makefile / run.sh / Python)  │
 │           Management scripts that invoke `claude` with specific      │
 │           flags (--plugin-dir, --agent, --settings, -p, ...).        │
@@ -44,6 +41,9 @@ harder about the right abstraction level.
 │  Layer 0: Tools & Primitives (e.g. Scripts — scripts/*.sh, *.py)     │
 │           Deterministic substrate. No AI. Testable standalone.       │
 │           Instrumentable for telemetry. "Below the AI."              │
+├──────────────────────────────────────────────────────────────────────┤
+│  Bonus  : Guardrails   (e.g. Hooks — .claude/settings.json)          │
+│           Cross-cutting enforcement. A dimension, not a layer.       │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -86,10 +86,10 @@ repo* (yes, the repo eats its own dog food):
 /review-my-architecture
 ```
 
-This invokes an L3 [Orchestration](.claude/commands/review-my-architecture.md) →
-L2 [Workflow](.claude/agents/socratic-reviewer-agent.md) →
-L1 [SOP](.claude/skills/architecture-audit/SKILL.md) →
-L0 [Tool](.claude/skills/architecture-audit/scripts/scan-layers.sh)
+This invokes an L3 [Orchestration](plugins/four-layer-architecture/commands/review-my-architecture.md) →
+L2 [Workflow](plugins/four-layer-architecture/agents/socratic-reviewer-agent.md) →
+L1 [SOP](plugins/four-layer-architecture/skills/architecture-audit/SKILL.md) →
+L0 [Tool](plugins/four-layer-architecture/skills/architecture-audit/scripts/scan-layers.sh)
 pipeline that **audits your project** and asks Socratic questions about
 your design decisions. It doesn't give answers. It develops *your* understanding.
 
@@ -99,6 +99,35 @@ your design decisions. It doesn't give answers. It develops *your* understanding
 * The subagent's `skills: [architecture-audit]` preloads the skill content
 * The skill references its bundled `scripts/scan-layers.sh`
 * Each layer delegates downward — no upward dependencies
+
+### Installing as a Claude Code plugin
+
+The components in `plugins/four-layer-architecture/` are packaged as a proper Claude Code plugin with a `.claude-plugin/plugin.json` manifest and a marketplace index at `.claude-plugin/marketplace.json`. Pick whichever install method fits your workflow.
+
+**Option 1 — Ad-hoc, per-invocation (no install):**
+
+```bash
+# From a clone of this repo:
+claude --plugin-dir ./plugins/four-layer-architecture
+
+# Or point at an absolute path from anywhere:
+claude --plugin-dir /path/to/agentic-4layer-architecture/plugins/four-layer-architecture
+```
+
+This loads the plugin for a single Claude Code session — no registration, no persistence. Useful for trying it out or for L4 launcher scripts that want to pin exactly this plugin.
+
+**Option 2 — Install via marketplace (persistent):**
+
+```
+/plugin marketplace add CLIAI/agentic-4layer-architecture
+/plugin install four-layer-architecture@agentic-4layer-architecture
+```
+
+Inside Claude Code, `/plugin marketplace add` accepts a GitHub `owner/repo` shortcut, a full git URL, or a local path. Once added, `/plugin install` pulls the specific plugin from that marketplace by name.
+
+**Option 3 — Copy-paste (learn by doing):**
+
+Clone the repo and copy `plugins/four-layer-architecture/{commands,agents,skills,hooks}` into your own project's `.claude/` directory. This is the *learning path* — by the time you've done it, you'll understand every layer. See [`docs/ecosystem.md`](docs/ecosystem.md) for the progression from local `.claude/` → plugin → marketplace.
 
 ---
 
@@ -186,24 +215,34 @@ agentic-4layer-architecture/
 │   ├── hooks-as-guardrails.md         ← Hooks deep dive
 │   ├── ecosystem.md                   ← Building, bundling, distributing as plugins
 │   └── references.md                  ← All links, resources, further reading
+├── .claude-plugin/
+│   └── marketplace.json               ← Marketplace index (enables `/plugin marketplace add`)
+├── plugins/
+│   └── four-layer-architecture/       ← Installable Claude Code plugin
+│       ├── .claude-plugin/
+│       │   └── plugin.json            ← Plugin manifest
+│       ├── commands/
+│       │   ├── review-my-architecture.md  ← Pipeline 1: Socratic architecture review
+│       │   └── explain-layer.md           ← Pipeline 2: Layer classification guide
+│       ├── agents/
+│       │   ├── socratic-reviewer-agent.md ← Asks questions, never prescribes (memory-enabled)
+│       │   └── layer-guide-agent.md       ← Explains where files fit in the 4 layers
+│       ├── skills/
+│       │   ├── architecture-audit/
+│       │   │   ├── SKILL.md               ← Atomic audit with frontmatter validation
+│       │   │   └── scripts/
+│       │   │       └── scan-layers.sh     ← Mechanical discovery + wiring validation
+│       │   └── layer-explainer/
+│       │       └── SKILL.md               ← Layer classification knowledge
+│       └── hooks/
+│           ├── hooks.json                 ← Plugin hook registration (uses ${CLAUDE_PLUGIN_ROOT})
+│           └── *.sh                       ← Guardrail scripts
 ├── .claude/
-│   ├── commands/
-│   │   ├── review-my-architecture.md  ← Pipeline 1: Socratic architecture review
-│   │   └── explain-layer.md           ← Pipeline 2: Layer classification guide
-│   ├── agents/
-│   │   ├── socratic-reviewer-agent.md ← Asks questions, never prescribes (memory-enabled)
-│   │   └── layer-guide-agent.md       ← Explains where files fit in the 4 layers
-│   └── skills/
-│       ├── architecture-audit/
-│       │   ├── SKILL.md               ← Atomic audit with frontmatter validation
-│       │   └── scripts/
-│       │       └── scan-layers.sh     ← Mechanical discovery + wiring validation
-│       └── layer-explainer/
-│           └── SKILL.md               ← Layer classification knowledge
+│   └── settings.json                  ← Project-local hook wiring for contributors working in the repo
 └── LICENSE
 ```
 
-Every file in `.claude/` is both **documentation** and **working code**.
+Every file in `plugins/four-layer-architecture/` is both **documentation** and **working code**.
 Two pipelines demonstrate the pattern in action:
 
 * `/review-my-architecture` — Socratic audit of your project's 4-layer compliance

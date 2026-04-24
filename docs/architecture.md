@@ -16,9 +16,6 @@ Each layer is named by its **conceptual role** (Orchestration, Workflows, SOPs, 
 
 ```
 +----------------------------------------------------------------------+
-|  Bonus  : Guardrails    (e.g. Hooks — .claude/settings.json)         |
-|           Cross-cutting enforcement across all layers                |
-+----------------------------------------------------------------------+
 |  Layer 4: Launchers     (e.g. Justfile / Makefile / run.sh)          |
 |           Management scripts that invoke `claude` with specific      |
 |           flags; make the stack reproducibly callable from cron/CI.  |
@@ -38,6 +35,9 @@ Each layer is named by its **conceptual role** (Orchestration, Workflows, SOPs, 
 +----------------------------------------------------------------------+
 |  Layer 0: Tools & Primitives  (e.g. Scripts — scripts/)              |
 |           Mechanical automation — no AI, deterministic, testable     |
++----------------------------------------------------------------------+
+|  Bonus  : Guardrails    (e.g. Hooks — .claude/settings.json)         |
+|           Cross-cutting enforcement across all layers                |
 +----------------------------------------------------------------------+
 ```
 
