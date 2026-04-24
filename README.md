@@ -57,6 +57,42 @@ for the full mapping.
 
 ---
 
+## Intent: extend your thinking, not outsource it
+
+> *"Don't outsource learning how to build with the most important technology*
+> *of our lifetime, agents. […] Agentic engineers know what their agents*
+> *are doing, and they know it so well, they don't have to look. Vibe coders*
+> *don't know, and they don't look. Don't outsource learning."*
+>
+> — **IndyDevDan**, *My 4-Layer Claude Code Playwright CLI Skill*
+> ([video][indydevdan]; full excerpt and transcript in
+> [`docs/reference-cache/indydevdan/`](docs/reference-cache/indydevdan/))
+
+This plugin is designed to be **food for your thinking**, not a substitute
+for it. Its commands ask you to articulate before they act. Its hooks
+nudge, but never block. Its journal records your reasoning so **you** —
+not a stateless agent — own the design.
+
+The teach-back system (`/four-layer-architecture:feynman-check`,
+`/four-layer-architecture:socratic`,
+`/four-layer-architecture:brainstorm-architecture`) scaffolds two kinds of
+understanding:
+
+* **Your own system, in your domain** — can you explain how *your* billing
+  workflow sequences its skills? What breaks if a specific step fails?
+* **The 4-layer meta-pattern** — do you actually know the difference
+  between `context: fork` and the `skills:` field? Between a hook that
+  replaces a skill and one that augments it?
+
+If you find yourself wanting to skip every teach-back prompt, that is a
+signal worth taking seriously: either the prompt is wrong, or the part of
+your architecture it's pointing at is the part you understand least.
+
+See [`docs/philosophy.md`](docs/philosophy.md) for the long-form argument
+— *cognitive telescope, not prompt jockey*.
+
+---
+
 ## Why Should You Care?
 
 Not because it makes AI do more for you. Because it makes **you think more clearly**.
@@ -79,19 +115,27 @@ This repo is here to help you get there.
 > a one-liner to bootstrap the architecture in your project. For now, read on
 > and build understanding first. That's the point.
 
-If you want to jump straight to the illustrative example that lives *in this
-repo* (yes, the repo eats its own dog food):
+If you want to jump straight to the illustrative examples that live *in this
+repo* (yes, the repo eats its own dog food), after install (see below):
 
 ```
-/review-my-architecture
+/four-layer-architecture:brainstorm-architecture    ← recommended first run
+/four-layer-architecture:review-my-architecture     ← Socratic audit pipeline
+/four-layer-architecture:feynman-check [topic]      ← you explain, the plugin checks
+/four-layer-architecture:socratic [topic]           ← the plugin probes, you answer
+/four-layer-architecture:explain-layer <file>       ← classify a file by layer
 ```
 
-This invokes an L3 [Orchestration](plugins/four-layer-architecture/commands/review-my-architecture.md) →
+The first one is the best starting point: it scans your project, shows a
+**two-pane menu** (your own system on one side, the 4-layer meta-pattern on
+the other), and routes you into either a Feynman-deep or a Socratic round.
+
+The audit command invokes an L3 [Orchestration](plugins/four-layer-architecture/commands/review-my-architecture.md) →
 L2 [Workflow](plugins/four-layer-architecture/agents/socratic-reviewer-agent.md) →
 L1 [SOP](plugins/four-layer-architecture/skills/architecture-audit/SKILL.md) →
 L0 [Tool](plugins/four-layer-architecture/skills/architecture-audit/scripts/scan-layers.sh)
-pipeline that **audits your project** and asks Socratic questions about
-your design decisions. It doesn't give answers. It develops *your* understanding.
+pipeline that asks Socratic questions about your design decisions. It doesn't
+give answers. It develops *your* understanding.
 
 **How the chain works technically:**
 
@@ -99,6 +143,11 @@ your design decisions. It doesn't give answers. It develops *your* understanding
 * The subagent's `skills: [architecture-audit]` preloads the skill content
 * The skill references its bundled `scripts/scan-layers.sh`
 * Each layer delegates downward — no upward dependencies
+
+**Namespacing:** every command this plugin adds lives under the
+`four-layer-architecture:` prefix after install. That prevents collisions
+with other plugins you may have enabled and makes the provenance of each
+command obvious.
 
 ### Installing as a Claude Code plugin
 
@@ -214,39 +263,56 @@ agentic-4layer-architecture/
 │   ├── examples.md                    ← Concrete pattern applications
 │   ├── hooks-as-guardrails.md         ← Hooks deep dive
 │   ├── ecosystem.md                   ← Building, bundling, distributing as plugins
-│   └── references.md                  ← All links, resources, further reading
+│   ├── references.md                  ← All links, resources, further reading
+│   ├── tricky-corners.md              ← Curated catalog the Socratic command drills on
+│   ├── design/                        ← Per-topic design docs (frontmatter-dated)
+│   ├── understanding/                 ← Per-layer curated notes promoted from teach-back rounds
+│   └── reference-cache/               ← Snapshots of upstream docs + IndyDevDan transcript
 ├── .claude-plugin/
 │   └── marketplace.json               ← Marketplace index (enables `/plugin marketplace add`)
 ├── plugins/
 │   └── four-layer-architecture/       ← Installable Claude Code plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json            ← Plugin manifest
-│       ├── commands/
-│       │   ├── review-my-architecture.md  ← Pipeline 1: Socratic architecture review
-│       │   └── explain-layer.md           ← Pipeline 2: Layer classification guide
-│       ├── agents/
-│       │   ├── socratic-reviewer-agent.md ← Asks questions, never prescribes (memory-enabled)
-│       │   └── layer-guide-agent.md       ← Explains where files fit in the 4 layers
-│       ├── skills/
-│       │   ├── architecture-audit/
-│       │   │   ├── SKILL.md               ← Atomic audit with frontmatter validation
-│       │   │   └── scripts/
-│       │   │       └── scan-layers.sh     ← Mechanical discovery + wiring validation
-│       │   └── layer-explainer/
-│       │       └── SKILL.md               ← Layer classification knowledge
-│       └── hooks/
-│           ├── hooks.json                 ← Plugin hook registration (uses ${CLAUDE_PLUGIN_ROOT})
-│           └── *.sh                       ← Guardrail scripts
+│       ├── commands/                  ← L3 Orchestration (thin)
+│       │   ├── review-my-architecture.md    ← Socratic architecture audit pipeline
+│       │   ├── explain-layer.md             ← Layer classification guide
+│       │   ├── brainstorm-architecture.md   ← Guided entry (two-pane menu)
+│       │   ├── feynman-check.md             ← You explain, plugin checks
+│       │   └── socratic.md                  ← Plugin probes, you answer
+│       ├── agents/                    ← L2 Workflows
+│       │   ├── socratic-reviewer-agent.md   ← Audit dialogue
+│       │   ├── layer-guide-agent.md         ← Layer classifier
+│       │   ├── teach-back-coach-agent.md    ← Runs Feynman rounds
+│       │   └── socratic-probe-agent.md      ← Runs Socratic rounds
+│       ├── skills/                    ← L1 SOPs / Capabilities
+│       │   ├── architecture-audit/          ← Audit SOP + scan-layers.sh
+│       │   ├── layer-explainer/             ← Layer classification knowledge
+│       │   ├── feynman-protocol/            ← Feynman lite + deep rules
+│       │   ├── socratic-protocol/           ← Socratic dialogue rules
+│       │   ├── system-scan/                 ← SOP + scan-system.sh + detect-change.sh (L0)
+│       │   └── teach-back-journal/          ← Journal format + promotion flow
+│       ├── hooks/                     ← Guardrails + advisory nudges
+│       │   ├── hooks.json                   ← Plugin hook registration (uses ${CLAUDE_PLUGIN_ROOT})
+│       │   ├── validate-no-force-push.sh    ← PreToolUse guardrail
+│       │   ├── check-frontmatter.sh         ← PostToolUse guardrail
+│       │   ├── check-prerequisites.sh       ← SessionStart + first-use nudge
+│       │   └── suggest-teach-back.sh        ← Advisory nudge on structural edits
+│       └── templates/
+│           └── four-layer-architecture.local.md.example  ← Per-project settings template
 ├── .claude/
 │   └── settings.json                  ← Project-local hook wiring for contributors working in the repo
 └── LICENSE
 ```
 
 Every file in `plugins/four-layer-architecture/` is both **documentation** and **working code**.
-Two pipelines demonstrate the pattern in action:
+Five pipelines demonstrate the pattern in action:
 
-* `/review-my-architecture` — Socratic audit of your project's 4-layer compliance
-* `/explain-layer <file>` — Explains which layer a file belongs to and traces the chain
+* `/four-layer-architecture:review-my-architecture` — Socratic audit of your project's 4-layer compliance
+* `/four-layer-architecture:explain-layer <file>` — Explains which layer a file belongs to and traces the chain
+* `/four-layer-architecture:brainstorm-architecture` — Guided entry: two-pane menu → Feynman-deep or Socratic
+* `/four-layer-architecture:feynman-check [topic]` — You explain your system; the plugin checks against code + docs
+* `/four-layer-architecture:socratic [topic]` — The plugin runs a 3–5 turn probing dialogue on one tricky topic
 
 ---
 
