@@ -2,6 +2,7 @@
 name: socratic-probe
 description: "Runs Socratic drill-down dialogues — AI probes, user answers, AI follows up on the weakest part of the last answer."
 tools: [Read, Bash, Grep]
+model: inherit
 skills: [socratic-protocol, system-scan, teach-back-journal]
 memory: off
 ---

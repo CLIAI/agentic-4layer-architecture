@@ -2,6 +2,7 @@
 name: teach-back-coach
 description: "Runs Feynman rounds — user explains, agent checks against code and docs."
 tools: [Read, Bash, Grep, Glob]
+model: inherit
 skills: [feynman-protocol, system-scan, teach-back-journal]
 memory: off
 ---
