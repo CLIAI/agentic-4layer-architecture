@@ -1,0 +1,69 @@
+---
+teach_back:
+  auto_suggest: true
+  first_use_shown: false
+  depth: lite
+  skip_paths: []
+
+journal:
+  max_lines: 200
+
+socratic:
+  default_topic: ""
+---
+
+# four-layer-architecture — local notes
+
+This file holds per-project preferences for the four-layer-architecture
+plugin's teach-back system. Edit the YAML frontmatter above to tune
+behaviour; use the body for freeform notes to yourself.
+
+**Location:** copy this template to `.claude/four-layer-architecture.local.md`
+in your project root. The file is gitignored so it stays per-user. Do NOT
+rename it — the plugin's hook script looks for that exact path.
+
+## What the settings do
+
+* **`teach_back.auto_suggest`** — when `true`, the `PreToolUse` hook prints
+  a single advisory line on structural edits (new agent / skill / command /
+  `plugin.json` change). Set `false` to mute.
+
+* **`teach_back.first_use_shown`** — flips to `true` once the
+  `SessionStart` first-use nudge has fired. Flip back to `false` if you
+  want to see it again (e.g. after major project changes).
+
+* **`teach_back.depth`** — default depth for
+  `/four-layer-architecture:feynman-check` when invoked without
+  `--deep`/`--lite`. One of `lite`, `deep`, or `off`.
+
+* **`teach_back.skip_paths`** — YAML list of glob patterns where the
+  structural-edit hook stays silent even when `auto_suggest: true`.
+  Example: `["plugins/*/hooks/*"]` silences the nudge on hook-script
+  edits while keeping it active for everything else.
+
+* **`journal.max_lines`** — threshold at which the plugin offers to
+  archive `.four-layer-journal.md` to a dated file.
+
+* **`socratic.default_topic`** — if set, `/four-layer-architecture:socratic`
+  with no argument picks this topic directly instead of showing the
+  two-pane menu.
+
+## Alternative skip channels
+
+Two other ways to mute teach-back, independent of this file:
+
+1. **Declared in instructions** — add a line containing
+   `four-layer-architecture: skip-teach-back` to your project's `AGENTS.md`
+   or `CLAUDE.md`. This opts out for every collaborator (the token is
+   checked into git).
+
+2. **In-session bail-out** — during any Feynman or Socratic round, reply
+   with `skip`, `enough`, `move on`, `I know this`, `proceed`, or `next`.
+   The agent yields immediately. No re-prompt this session.
+
+## Freeform notes
+
+Add notes to yourself below. The plugin does not read this body — it is
+for you.
+
+<!-- your notes here -->

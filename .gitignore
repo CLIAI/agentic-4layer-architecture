@@ -51,5 +51,10 @@ tmp/
 # settings.json) IS tracked — these rules only exclude user-local state.
 .claude/settings.local.json
 .claude/**/*.local.json
+.claude/**/*.local.md
 *.bak
 *.bak.*
+
+# four-layer-architecture teach-back artifacts (per-user)
+.four-layer-journal.md
+.four-layer-journal.*.md
