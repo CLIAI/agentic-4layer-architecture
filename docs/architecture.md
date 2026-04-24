@@ -324,7 +324,7 @@ Without an L4 launcher, reuse relies on humans remembering the right `claude` co
 
 ### Relevant CLI flags
 
-Launchers typically combine some subset of these (see [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference)):
+Launchers typically combine some subset of these (see [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference), also [locally cached](reference-cache/claude-code/cli-reference.md)):
 
 | Flag | Purpose in L4 context |
 |------|----------------------|
@@ -343,7 +343,7 @@ Launchers typically combine some subset of these (see [CLI reference](https://do
 | `--fallback-model` / `--model` / `--effort` | Model control |
 | `--output-format` / `--input-format` / `--json-schema` | Structured I/O for pipelines |
 
-> The docs note: *"`claude --help` does not list every flag, so a flag's absence from `--help` does not mean it is unavailable."* Refer to the [CLI reference page](https://docs.claude.com/en/docs/claude-code/cli-reference) for the full, current list.
+> The docs note: *"`claude --help` does not list every flag, so a flag's absence from `--help` does not mean it is unavailable."* Refer to the [CLI reference page](https://docs.claude.com/en/docs/claude-code/cli-reference) (or the [locally cached snapshot](reference-cache/claude-code/cli-reference.md)) for the full, current list.
 
 ### Design Principles
 

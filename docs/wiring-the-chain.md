@@ -55,7 +55,7 @@ ui-review-direct url:
            -p "Review the UI at {{url}}"
 ```
 
-**Key flags** (see [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference)):
+**Key flags** (see [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference) / [local cache](reference-cache/claude-code/cli-reference.md)):
 
 | Flag | Binds which layer |
 |------|-------------------|

@@ -154,7 +154,7 @@ underlying primitives. Don't just read about it — build with it.
 ### Official Documentation
 
 * [Claude Code Overview](https://code.claude.com/docs/en) — start here (also available as [llms.txt](https://code.claude.com/docs/llms.txt))
-* [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference) — flags that L4 Launchers use: `--plugin-dir`, `--agent`, `--settings`, `--mcp-config`, `-p`, `--bare`, `--permission-mode`, `--max-turns`, `--max-budget-usd`
+* [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference) ([local cache](docs/reference-cache/claude-code/cli-reference.md)) — flags that L4 Launchers use: `--plugin-dir`, `--agent`, `--settings`, `--mcp-config`, `-p`, `--bare`, `--permission-mode`, `--max-turns`, `--max-budget-usd`
 * [Skills](https://code.claude.com/docs/en/skills) — L3 Orchestration & L1 SOPs: commands have been merged into skills. Use `context: fork` + `agent` to delegate to subagents
 * [Custom Subagents](https://code.claude.com/docs/en/sub-agents) — L2 Workflows: YAML frontmatter with `tools`, `skills`, `memory`, `hooks`
 * [Hooks](https://code.claude.com/docs/en/hooks) — Guardrails (Bonus): nested format with `type: command`/`http`/`prompt`
