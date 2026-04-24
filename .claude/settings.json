@@ -1,4 +1,5 @@
 {
+  "_comment": "Components live in plugins/four-layer-architecture/. For full plugin loading (commands/agents/skills + hooks), launch Claude Code with: claude --plugin-dir ./plugins/four-layer-architecture. These hook entries only keep guardrails active when working in the repo without --plugin-dir.",
   "hooks": {
     "PreToolUse": [
       {
@@ -6,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-no-force-push.sh"
+            "command": "bash plugins/four-layer-architecture/hooks/validate-no-force-push.sh"
           }
         ]
       }
@@ -17,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-frontmatter.sh"
+            "command": "bash plugins/four-layer-architecture/hooks/check-frontmatter.sh"
           }
         ]
       }
@@ -27,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-prerequisites.sh"
+            "command": "bash plugins/four-layer-architecture/hooks/check-prerequisites.sh"
           }
         ]
       }

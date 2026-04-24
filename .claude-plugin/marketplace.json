@@ -1,0 +1,21 @@
+{
+  "name": "agentic-4layer-architecture",
+  "owner": {
+    "name": "CLIAI",
+    "url": "https://github.com/CLIAI"
+  },
+  "metadata": {
+    "description": "Marketplace hosting the four-layer-architecture reference plugin — an educational example of the 4-layer agentic architecture pattern.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "four-layer-architecture",
+      "source": "./plugins/four-layer-architecture",
+      "description": "Reference plugin illustrating the 4-layer architecture (L0 Tools, L1 SOPs/Skills, L2 Workflows/Agents, L3 Orchestration/Commands) plus Guardrails/Hooks.",
+      "version": "0.1.0",
+      "category": "education",
+      "keywords": ["architecture", "education", "reference", "4-layer"]
+    }
+  ]
+}

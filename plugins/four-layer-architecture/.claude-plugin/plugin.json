@@ -1,0 +1,13 @@
+{
+  "name": "four-layer-architecture",
+  "version": "0.1.0",
+  "description": "Educational plugin illustrating the 4-layer agentic architecture (Tools, SOPs, Workflows, Orchestration + Guardrails) with example skills, agents, commands, and hooks.",
+  "author": {
+    "name": "CLIAI",
+    "url": "https://github.com/CLIAI/agentic-4layer-architecture"
+  },
+  "homepage": "https://github.com/CLIAI/agentic-4layer-architecture",
+  "repository": "https://github.com/CLIAI/agentic-4layer-architecture",
+  "license": "MIT",
+  "keywords": ["architecture", "education", "skills", "agents", "hooks", "4-layer"]
+}
