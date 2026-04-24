@@ -1,40 +1,59 @@
 # The 4-Layer Agentic Architecture
 
-**Commands → Agents → Skills → Scripts (+Hooks)**
+**Launchers → Orchestration → Workflows → SOPs → Tools & Primitives (+ Guardrails)**
 
 This repository documents a **layered architecture pattern** for orchestrating
 AI-assisted workflows in [Claude Code](https://code.claude.com/docs/en).
 It's not a framework to install — it's a **thinking framework** to internalize.
 
+We name each layer by its **conceptual role** and give the Claude Code primitive
+as the current implementation. The pattern is harness-agnostic: the concepts
+survive a switch to another agentic tool; only the implementation artifacts change.
+
 > **Want a compact reference?** See the [handy gist](https://gist.github.com/gwpl/02bcacb9a11ebd6c61bb7fd40f553bc3) — a condensed version you can feed directly to your AI agent.
 
-The architecture separates *what to do* from *how to orchestrate it* from
-*how to do each step* from *mechanical execution*. Four layers. Each with a
-clear purpose. Each making you think harder about the right abstraction level.
+The architecture separates *how to invoke the stack* from *what a user asks for*
+from *how to sequence the work* from *how to do one thing well* from *mechanical
+execution*. Five layers plus a cross-cutting dimension. Each making you think
+harder about the right abstraction level.
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  Layer 4: Commands    (.claude/commands/*.md)             │
-│  "What to do" — User-facing /slash-commands.             │
-│  Thin. 5-15 lines. Orchestrate, don't implement.        │
-├──────────────────────────────────────────────────────────┤
-│  Layer 3: Agents      (.claude/agents/*.md)              │
-│  "How to orchestrate" — Stateful pipeline managers.      │
-│  Sequence skills, handle errors, ask at decision points. │
-├──────────────────────────────────────────────────────────┤
-│  Layer 2: Skills      (.claude/skills/*/SKILL.md)        │
-│  "How to do each step" — Atomic, reusable operations.    │
-│  One skill = one thing done well. Can bundle scripts.    │
-├──────────────────────────────────────────────────────────┤
-│  Layer 1: Scripts     (scripts/*.sh, scripts/*.py)       │
-│  "Mechanical execution" — No AI. Deterministic.          │
-│  Testable standalone. Instrumentable for telemetry.      │
-├──────────────────────────────────────────────────────────┤
-│  Bonus:   Hooks       (.claude/settings.json)            │
-│  Cross-cutting enforcement. Guardrails. Telemetry.       │
-│  When other layers aren't sufficient — hooks are.        │
-└──────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Bonus  : Guardrails   (e.g. Hooks — .claude/settings.json)          │
+│           Cross-cutting enforcement. A dimension, not a layer.       │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 4: Launchers    (e.g. Justfile / Makefile / run.sh / Python)  │
+│           Management scripts that invoke `claude` with specific      │
+│           flags (--plugin-dir, --agent, --settings, -p, ...).        │
+│           Make the stack reproducibly callable from cron/CI/aliases. │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 3: Orchestration (e.g. Custom Commands — .claude/commands/)   │
+│           "When and in what sequence" — user-facing /slash-commands. │
+│           Thin. 5–15 lines. Orchestrate, don't implement.            │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 2: Workflows     (e.g. Custom Agents — .claude/agents/*.md)   │
+│           "How to sequence capabilities" — specialist pipelines.     │
+│           Sequence SOPs, handle errors, ask at decision points.      │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 1: SOPs / Capabilities                                        │
+│           (e.g. Skills — .claude/skills/*/SKILL.md)                  │
+│           Standard Operating Procedures — what Claude can do,        │
+│           documented as reusable capabilities. One SOP = one thing   │
+│           done well. Can bundle L0 tools.                            │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 0: Tools & Primitives (e.g. Scripts — scripts/*.sh, *.py)     │
+│           Deterministic substrate. No AI. Testable standalone.       │
+│           Instrumentable for telemetry. "Below the AI."              │
+└──────────────────────────────────────────────────────────────────────┘
 ```
+
+**Numbering direction.** We number bottom-up: L0 is the foundation, L4 is the
+outermost entry point. This matches [IndyDevDan's original framing][indydevdan]
+(he numbers Skills=1, Agents=2, Commands=3, Justfile=4) while still giving
+scripts their own explicit tier as L0. See [docs/concepts-vs-implementation.md](docs/concepts-vs-implementation.md)
+for the full mapping.
+
+[indydevdan]: https://www.youtube.com/watch?v=efctPj6bjCY
 
 ---
 
@@ -67,10 +86,10 @@ repo* (yes, the repo eats its own dog food):
 /review-my-architecture
 ```
 
-This invokes a [Command](.claude/commands/review-my-architecture.md) →
-[Agent](.claude/agents/socratic-reviewer-agent.md) →
-[Skill](.claude/skills/architecture-audit/SKILL.md) →
-[Script](.claude/skills/architecture-audit/scripts/scan-layers.sh)
+This invokes an L3 [Orchestration](.claude/commands/review-my-architecture.md) →
+L2 [Workflow](.claude/agents/socratic-reviewer-agent.md) →
+L1 [SOP](.claude/skills/architecture-audit/SKILL.md) →
+L0 [Tool](.claude/skills/architecture-audit/scripts/scan-layers.sh)
 pipeline that **audits your project** and asks Socratic questions about
 your design decisions. It doesn't give answers. It develops *your* understanding.
 
@@ -85,22 +104,27 @@ your design decisions. It doesn't give answers. It develops *your* understanding
 
 ## The Core Thesis
 
-**Orchestration of workflows via Custom Commands** that orchestrate
-**Custom Agents** encoding SOPs and workflows, which use **Custom Skills**
-encoding the actual details of how actions are done — with the feature of
-**bundled custom scripts** for:
+**Orchestration (L3)** via Custom Commands delegates to **Workflows (L2)**
+implemented as Custom Agents, which compose **SOPs / Capabilities (L1)**
+implemented as Skills, which bundle **Tools & Primitives (L0)** — deterministic
+scripts — for:
 
 * Improved command-line ergonomics
 * Instrumentation for telemetry
 * Safety assertions and permission checks
 * Background work that doesn't need AI reasoning
 
-And **Hooks** as the enforcement layer — injecting guardrails, validation,
-and automation whenever the other layers aren't sufficient.
+**Launchers (L4)** — justfiles, Makefiles, `run.sh`, Python entrypoints — sit
+on top and invoke `claude` with the right flags (`--plugin-dir`, `--agent`,
+`--settings`, `-p`, …) so the stack is reproducibly callable from cron, CI,
+or a teammate's laptop.
 
-### Why Scripts Matter (The Underappreciated Layer)
+**Guardrails (Bonus)** — Hooks — are the enforcement dimension, injecting
+validation and automation whenever the other layers aren't sufficient.
 
-When a skill bundles a script, something powerful happens:
+### Why L0 (Tools & Primitives) Matters
+
+When an L1 SOP bundles an L0 tool (a script), something powerful happens:
 
 1. **The script is testable standalone** — `./scripts/scan-layers.sh /path/to/project` works without Claude Code
 2. **The script is instrumentable** — add logging, metrics, timing without touching AI prompts
@@ -130,9 +154,10 @@ underlying primitives. Don't just read about it — build with it.
 ### Official Documentation
 
 * [Claude Code Overview](https://code.claude.com/docs/en) — start here (also available as [llms.txt](https://code.claude.com/docs/llms.txt))
-* [Skills](https://code.claude.com/docs/en/skills) — Layer 4/2: Commands have been merged into skills. Use `context: fork` + `agent` to delegate to subagents
-* [Custom Subagents](https://code.claude.com/docs/en/sub-agents) — Layer 3: YAML frontmatter with `tools`, `skills`, `memory`, `hooks`
-* [Hooks](https://code.claude.com/docs/en/hooks) — The enforcement layer: nested format with `type: command`/`http`/`prompt`
+* [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference) — flags that L4 Launchers use: `--plugin-dir`, `--agent`, `--settings`, `--mcp-config`, `-p`, `--bare`, `--permission-mode`, `--max-turns`, `--max-budget-usd`
+* [Skills](https://code.claude.com/docs/en/skills) — L3 Orchestration & L1 SOPs: commands have been merged into skills. Use `context: fork` + `agent` to delegate to subagents
+* [Custom Subagents](https://code.claude.com/docs/en/sub-agents) — L2 Workflows: YAML frontmatter with `tools`, `skills`, `memory`, `hooks`
+* [Hooks](https://code.claude.com/docs/en/hooks) — Guardrails (Bonus): nested format with `type: command`/`http`/`prompt`
 * [Agent Teams](https://code.claude.com/docs/en/agent-teams) — Multi-agent coordination across separate sessions
 * [Plugins](https://code.claude.com/docs/en/plugins) — Package and distribute skills, agents, and hooks
 
@@ -188,11 +213,13 @@ Two pipelines demonstrate the pattern in action:
 
 ## The Architecture in One Sentence
 
-> **Commands say what. Agents say when and in what order. Skills say how.
-> Scripts just do it. Hooks make sure everyone behaves.**
+> **Launchers say how to start. Orchestration says what the user asked for.
+> Workflows say when and in what order. SOPs say how to do each thing well.
+> Tools & Primitives just do it. Guardrails make sure everyone behaves.**
 
 If that sentence makes sense to you, you understand the pattern.
-If it doesn't yet — the [architecture deep-dive](docs/architecture.md) will get you there.
+If it doesn't yet — the [architecture deep-dive](docs/architecture.md) and the
+[concepts vs implementation](docs/concepts-vs-implementation.md) mapping will get you there.
 
 ---
 

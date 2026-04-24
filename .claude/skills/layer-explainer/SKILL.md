@@ -6,27 +6,34 @@ allowed-tools: Read, Glob, Grep
 
 # Layer Explainer Skill
 
-Given a file path, determine which layer of the 4-layer agentic architecture it belongs to
-and explain its role in the delegation chain.
+Given a file path, determine which layer of the agentic architecture it belongs to
+and explain its role in the delegation chain. Each layer is named by its
+**conceptual role**, with the Claude Code primitive as the example implementation.
 
 ## Classification Rules
 
 Classify the file into one of:
 
-* **Layer 4: Command** — Files in `.claude/commands/`. Should be thin (5-15 lines),
-  use `context: fork` + `agent:` to delegate. Creates a `/slash-command`.
+* **L4: Launcher** — Files like `justfile`, `Makefile`, `run.sh`, Python entrypoints,
+  shell aliases, cron entries, CI job configs that invoke `claude` with specific flags
+  (`--plugin-dir`, `--agent`, `--settings`, `-p`, ...). Declarative, not implementing
+  AI logic themselves.
 
-* **Layer 3: Agent** — Files in `.claude/agents/`. Should have `tools:`, `skills:`,
-  and a system prompt. Orchestrates workflows by reasoning about preloaded skills.
+* **L3: Orchestration (Command)** — Files in `.claude/commands/`. Should be thin
+  (5–15 lines), use `context: fork` + `agent:` to delegate. Creates a `/slash-command`.
 
-* **Layer 2: Skill** — `SKILL.md` files in `.claude/skills/*/`. Should have
-  `allowed-tools:` and reference bundled scripts via `${CLAUDE_SKILL_DIR}`.
+* **L2: Workflow (Agent)** — Files in `.claude/agents/`. Should have `tools:`, `skills:`,
+  and a system prompt. Sequences SOPs by reasoning about preloaded skill content.
 
-* **Layer 1: Script** — Shell/Python files in `scripts/` or skill-bundled `scripts/`.
-  Should be deterministic, no AI reasoning, testable standalone.
+* **L1: SOP / Capability (Skill)** — `SKILL.md` files in `.claude/skills/*/`. Should have
+  `allowed-tools:` and reference bundled scripts via `${CLAUDE_SKILL_DIR}`. Both a
+  named capability (what Claude can do) and a documented procedure (how to do it).
 
-* **Cross-cutting: Hook** — Files referenced in `.claude/settings.json` hooks.
-  Should be lightweight enforcement, not feature implementation.
+* **L0: Tool / Primitive (Script)** — Shell/Python files in `scripts/` or skill-bundled
+  `scripts/`. Deterministic, no AI reasoning, testable standalone. "Below the AI."
+
+* **Bonus: Guardrail (Hook)** — Files referenced in `.claude/settings.json` hooks
+  (or subagent/skill frontmatter). Lightweight enforcement, not feature implementation.
 
 * **Configuration** — `CLAUDE.md`, `AGENTS.md`. Persistent project context.
 

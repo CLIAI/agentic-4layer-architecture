@@ -45,3 +45,11 @@ tmp/
 # Environment
 .env
 .env.local
+
+# Claude Code local overrides (per-user, never committed)
+# NOTE: everything else under .claude/ (skills, agents, commands, hooks,
+# settings.json) IS tracked — these rules only exclude user-local state.
+.claude/settings.local.json
+.claude/**/*.local.json
+*.bak
+*.bak.*

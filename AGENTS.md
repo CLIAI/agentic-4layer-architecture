@@ -2,12 +2,16 @@
 
 ## What This Repo Is
 
-A public knowledge base documenting the **4-layer agentic architecture pattern** for Claude Code and similar AI-assisted development tools. The architecture organizes agent configuration into four composable layers:
+A public knowledge base documenting the **4-layer agentic architecture pattern** for Claude Code and similar AI-assisted development tools. The architecture names each layer by its **conceptual role** and gives the Claude Code primitive as the example implementation (harness-agnostic):
 
-1. **Configuration** (CLAUDE.md / AGENTS.md) -- persistent instructions, conventions, project context
-2. **Automation** (hooks) -- event-driven triggers that enforce standards automatically
-3. **Skills** (slash commands) -- reusable, parameterized workflows invoked on demand
-4. **Orchestration** (agents / teams) -- multi-agent coordination for complex tasks
+* **L0: Tools & Primitives** (Scripts) — deterministic substrate, no AI
+* **L1: SOPs / Capabilities** (Skills) — documented, reusable capabilities
+* **L2: Workflows** (Custom Agents) — specialist pipelines that sequence SOPs
+* **L3: Orchestration** (Custom Commands / slash-commands) — user-facing thin wrappers
+* **L4: Launchers** (Justfile / Makefile / run.sh / Python / cron / CI) — invoke `claude` with specific flags
+* **Bonus: Guardrails** (Hooks) — cross-cutting enforcement across all layers
+
+See [docs/concepts-vs-implementation.md](docs/concepts-vs-implementation.md) for the full mapping and the comparison with IndyDevDan's original framing.
 
 This repo lives at **github.com/CLIAI/agentic-4layer-architecture**.
 

@@ -7,32 +7,74 @@ This document explains the **exact mechanism** by which each layer of the 4-laye
 ## The Delegation Chain
 
 ```
-User types: /ui-review https://example.com
+External entry (L4 Launcher, optional):
+  just ui-review https://example.com
+    → claude --plugin-dir … --agent browser-qa -p "Review the UI at …"
 
-  ┌─────────────────────────────────────────────────────────┐
-  │ Layer 4: Command  (.claude/commands/ui-review.md)       │
-  │   context: fork  +  agent: browser-qa                   │
-  │   → Launches the browser-qa subagent with skill content │
-  │     as the task prompt                                   │
-  ├─────────────────────────────────────────────────────────┤
-  │ Layer 3: Agent  (.claude/agents/browser-qa.md)          │
-  │   skills: [playwright-browser]                          │
-  │   → Preloads skill content into agent's context         │
-  │   → Agent reasons about what to do, follows skill       │
-  │     instructions                                        │
-  ├─────────────────────────────────────────────────────────┤
-  │ Layer 2: Skill  (.claude/skills/playwright-browser/)    │
-  │   SKILL.md references ${CLAUDE_SKILL_DIR}/scripts/...   │
-  │   → Agent follows skill instructions, runs scripts      │
-  ├─────────────────────────────────────────────────────────┤
-  │ Layer 1: Scripts  (scripts/ or skill-bundled)           │
-  │   Deterministic shell/Python — no AI reasoning          │
-  └─────────────────────────────────────────────────────────┘
+User types (or launcher triggers): /ui-review https://example.com
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │ L3 Orchestration — Command  (.claude/commands/ui-review.md)  │
+  │   context: fork  +  agent: browser-qa                        │
+  │   → Launches the browser-qa subagent with SOP content        │
+  │     as the task prompt                                       │
+  ├──────────────────────────────────────────────────────────────┤
+  │ L2 Workflow — Agent  (.claude/agents/browser-qa.md)          │
+  │   skills: [playwright-browser]                               │
+  │   → Preloads SOP content into the workflow's context         │
+  │   → Workflow reasons about what to do, follows SOP           │
+  │     instructions                                             │
+  ├──────────────────────────────────────────────────────────────┤
+  │ L1 SOP / Capability — Skill                                  │
+  │   (.claude/skills/playwright-browser/)                       │
+  │   SKILL.md references ${CLAUDE_SKILL_DIR}/scripts/...        │
+  │   → Workflow follows SOP instructions, runs L0 tools         │
+  ├──────────────────────────────────────────────────────────────┤
+  │ L0 Tools & Primitives — Scripts                              │
+  │   (scripts/ or skill-bundled)                                │
+  │   Deterministic shell/Python — no AI reasoning               │
+  └──────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Layer 4 → Layer 3: Command Delegates to Agent
+## L4 → L3: Launcher Delegates to Orchestration (or bypasses it)
+
+**Mechanism:** An L4 launcher (justfile, Makefile, `run.sh`) invokes the `claude` binary with flags that pin the stack. Common patterns:
+
+```makefile
+# justfile
+# Variant A — launch via a /slash-command (enters at L3)
+ui-review-via-slash url:
+    claude --plugin-dir ./.claude-plugins/ui-review -p "/ui-review {{url}}"
+
+# Variant B — force-bind an L2 workflow directly (bypasses L3)
+ui-review-direct url:
+    claude --plugin-dir ./.claude-plugins/ui-review \
+           --agent browser-qa \
+           -p "Review the UI at {{url}}"
+```
+
+**Key flags** (see [CLI reference](https://docs.claude.com/en/docs/claude-code/cli-reference)):
+
+| Flag | Binds which layer |
+|------|-------------------|
+| `--plugin-dir <path>` | The bundle of L1/L2/L3 artifacts available |
+| `--agent <name>` | The L2 workflow to force (bypasses L3 if used with `-p`) |
+| `--agents <json>` | Define a transient L2 workflow inline |
+| `--settings <path>` / `--setting-sources` | Which L-cross settings profile applies |
+| `--mcp-config <path>` | External MCP servers accessible to L0/L1 |
+| `--allowedTools` / `--disallowedTools` / `--tools` | Session-scoped tool fencing |
+| `--permission-mode <mode>` | Guardrail default for this invocation |
+| `--max-turns <n>` / `--max-budget-usd <n>` | Budget caps |
+| `-p "<prompt>"` / `--print` | Non-interactive; the prompt takes the role of the user's typed message at L3 |
+| `--bare` | Skip auto-discovery for fastest scripted calls |
+
+Launchers are the **only** layer that touches `claude` as a command-line program. Everything else lives inside a Claude Code session.
+
+---
+
+## L3 → L2: Orchestration (Command) Delegates to Workflow (Agent)
 
 **Mechanism:** `context: fork` + `agent: <subagent-name>` in the command's YAML frontmatter.
 
@@ -74,7 +116,7 @@ Report findings with severity levels.
 
 ---
 
-## Layer 3 → Layer 2: Agent Preloads Skills
+## L2 → L1: Workflow (Agent) Preloads SOP (Skill)
 
 **Mechanism:** `skills: [skill-name]` in the subagent's YAML frontmatter.
 
@@ -132,7 +174,7 @@ to capture and analyze screenshots.
 
 ---
 
-## Layer 2 → Layer 1: Skill References Scripts
+## L1 → L0: SOP (Skill) References Tools (Scripts)
 
 **Mechanism:** Skill's `SKILL.md` contains instructions that reference bundled scripts via `${CLAUDE_SKILL_DIR}`.
 
@@ -216,10 +258,10 @@ This means the chain terminates at **depth 2**: a skill can launch a subagent, b
 
 This is sufficient for the 4-layer pattern because:
 
-* Layer 4 (Command/Skill) → delegates via `context: fork` + `agent`
-* Layer 3 (Agent/Subagent) → uses preloaded skills via `skills:` field
-* Layer 2 (Skill content) → references scripts in its instructions
-* Layer 1 (Scripts) → just executes
+* L3 Orchestration (Command/Skill) → delegates via `context: fork` + `agent`
+* L2 Workflow (Agent/Subagent) → uses preloaded SOPs via `skills:` field
+* L1 SOP content → references L0 tools in its instructions
+* L0 Tools (Scripts) → just execute
 
 ### Two directions of skill ↔ agent wiring
 
@@ -232,8 +274,8 @@ The official docs describe two complementary directions:
 
 Both are valid. The 4-layer pattern uses **both**:
 
-* **Layer 4 → 3** uses `context: fork` + `agent` (skill launches agent)
-* **Layer 3 → 2** uses `skills: [...]` (agent preloads skill)
+* **L3 → L2** uses `context: fork` + `agent` (orchestration skill launches workflow agent)
+* **L2 → L1** uses `skills: [...]` (workflow agent preloads SOP skill)
 
 ### Historical note: commands merged into skills
 
@@ -242,7 +284,7 @@ As of Claude Code v2.1.3+:
 > "Custom commands have been merged into skills. A file at `.claude/commands/review.md` and a skill at `.claude/skills/review/SKILL.md` both create `/review` and work the same way."
 > — [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
 
-The 4-layer pattern still holds conceptually. **Thin commands** (Layer 4) are skills that exist solely to orchestrate — they use `context: fork` + `agent` and contain minimal logic. **Rich skills** (Layer 2) contain domain knowledge and script references. The architectural distinction is in *purpose*, not in file format.
+The pattern still holds conceptually. **L3 Orchestration skills (thin commands)** exist solely to orchestrate — they use `context: fork` + `agent` and contain minimal logic. **L1 SOP skills (rich skills)** contain domain knowledge and tool references. The architectural distinction is in *role*, not in file format.
 
 ---
 
@@ -264,7 +306,7 @@ The 4-layer pattern still holds conceptually. **Thin commands** (Layer 4) are sk
 
 ## Quick Reference: Frontmatter Fields That Wire the Chain
 
-### Command/Skill (Layer 4) → `.claude/commands/*.md` or `.claude/skills/*/SKILL.md`
+### L3 Orchestration — Command/Skill → `.claude/commands/*.md` or `.claude/skills/*/SKILL.md`
 
 ```yaml
 ---
@@ -277,7 +319,7 @@ argument-hint: "[url]"     # Autocomplete hint
 ---
 ```
 
-### Agent (Layer 3) → `.claude/agents/*.md`
+### L2 Workflow — Agent → `.claude/agents/*.md`
 
 ```yaml
 ---
@@ -298,7 +340,7 @@ hooks:                     # Scoped lifecycle hooks
 ---
 ```
 
-### Skill (Layer 2) → `.claude/skills/*/SKILL.md`
+### L1 SOP / Capability — Skill → `.claude/skills/*/SKILL.md`
 
 ```yaml
 ---
@@ -311,7 +353,7 @@ user-invocable: false      # Hide from / menu (background knowledge)
 Instructions referencing ${CLAUDE_SKILL_DIR}/scripts/...
 ```
 
-### Hooks (Cross-cutting) → `.claude/settings.json`
+### Bonus Guardrails — Hooks → `.claude/settings.json`
 
 ```json
 {

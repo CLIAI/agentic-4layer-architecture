@@ -1,6 +1,9 @@
 # Examples: The 4-Layer Pattern in Practice
 
-Concrete examples showing how real workflows map to the Commands -> Agents -> Skills -> Scripts + Hooks architecture.
+Concrete examples showing how real workflows map to the
+Launchers → Orchestration → Workflows → SOPs → Tools & Primitives (+ Guardrails) architecture.
+
+> **Layer naming recap:** L0 Tools & Primitives (Scripts) · L1 SOPs / Capabilities (Skills) · L2 Workflows (Agents) · L3 Orchestration (Commands) · L4 Launchers (justfile / Makefile / run.sh) · Bonus Guardrails (Hooks). See [concepts-vs-implementation.md](concepts-vs-implementation.md).
 
 ---
 
@@ -16,11 +19,12 @@ Inspired by IndyDevDan's public demonstration of Playwright-based browser automa
 
 | Layer | Artifact | Responsibility |
 |-------|----------|---------------|
-| **Layer 4: Command** | `.claude/commands/ui-review.md` | Accept URL from user, delegate to agent |
-| **Layer 3: Agent** | `.claude/agents/browser-qa.md` | Orchestrate screenshot capture, analyze visuals, compile report |
-| **Layer 2: Skill** | `.claude/skills/playwright-browser/SKILL.md` | Atomic operation: install browsers + capture screenshots |
-| **Layer 1: Scripts** | `scripts/setup.sh`, `scripts/capture.sh` | Deterministic: `npx playwright install`, `npx playwright screenshot` |
-| **Bonus: Hooks** | `PreToolUse(Bash)` | Block dangerous shell commands during the workflow |
+| **L4 Launcher** | `justfile` recipe `ui-review` | `claude --plugin-dir ... --agent browser-qa -p "Review $URL"` |
+| **L3 Orchestration** | `.claude/commands/ui-review.md` | Accept URL from user, delegate to workflow |
+| **L2 Workflow** | `.claude/agents/browser-qa.md` | Sequence screenshot capture, analyze visuals, compile report |
+| **L1 SOP / Capability** | `.claude/skills/playwright-browser/SKILL.md` | Documented capability: install browsers + capture screenshots |
+| **L0 Tools & Primitives** | `scripts/setup.sh`, `scripts/capture.sh` | Deterministic: `npx playwright install`, `npx playwright screenshot` |
+| **Bonus Guardrail** | `PreToolUse(Bash)` hook | Block dangerous shell commands during the run |
 
 ### Flow
 
@@ -150,12 +154,13 @@ echo "$OUTPUT"
 
 | Layer | Artifact | Responsibility |
 |-------|----------|---------------|
-| **Layer 4: Command** | `.claude/commands/ci-review.md` | Accept pipeline file path, delegate |
-| **Layer 3: Agent** | `.claude/agents/pipeline-reviewer.md` | Analyze pipeline config, check for anti-patterns, suggest improvements |
-| **Layer 2: Skill** | `.claude/skills/yaml-analyzer/SKILL.md` | Parse and validate YAML/workflow files |
-| **Layer 2: Skill** | `.claude/skills/security-scanner/SKILL.md` | Check for hardcoded secrets, overly permissive permissions |
-| **Layer 1: Scripts** | `scripts/yaml-lint.sh` | Run `yamllint` on config files |
-| **Bonus: Hooks** | `PostToolUse(Write)` | Lint any modified pipeline files automatically |
+| **L4 Launcher** | `justfile` recipe `ci-review` | Invoke `claude` with CI-reviewer plugin set |
+| **L3 Orchestration** | `.claude/commands/ci-review.md` | Accept pipeline file path, delegate |
+| **L2 Workflow** | `.claude/agents/pipeline-reviewer.md` | Analyze pipeline config, check for anti-patterns, suggest improvements |
+| **L1 SOP / Capability** | `.claude/skills/yaml-analyzer/SKILL.md` | Parse and validate YAML/workflow files |
+| **L1 SOP / Capability** | `.claude/skills/security-scanner/SKILL.md` | Check for hardcoded secrets, overly permissive permissions |
+| **L0 Tools & Primitives** | `scripts/yaml-lint.sh` | Run `yamllint` on config files |
+| **Bonus Guardrail** | `PostToolUse(Write)` hook | Lint any modified pipeline files automatically |
 
 ### Flow
 
@@ -170,7 +175,7 @@ echo "$OUTPUT"
 
 ### Key Insight
 
-The **security-scanner** skill is reusable -- it can serve the CI/CD review agent, a code review agent, or a pre-commit hook. That is the power of Layer 2: skills are building blocks, not single-use modules.
+The **security-scanner** SOP is reusable — it can serve the CI/CD review workflow, a code review workflow, or a pre-commit guardrail. That is the power of L1: SOPs are building blocks, not single-use modules.
 
 ---
 
@@ -184,12 +189,13 @@ The **security-scanner** skill is reusable -- it can serve the CI/CD review agen
 
 | Layer | Artifact | Responsibility |
 |-------|----------|---------------|
-| **Layer 4: Command** | `.claude/commands/research.md` | Accept topic from user, delegate |
-| **Layer 3: Agent** | `.claude/agents/research-analyst.md` | Plan research strategy, synthesize findings, produce report |
-| **Layer 2: Skill** | `.claude/skills/web-research/SKILL.md` | Fetch and extract content from web sources |
-| **Layer 2: Skill** | `.claude/skills/report-writer/SKILL.md` | Structure findings into formatted markdown |
-| **Layer 1: Scripts** | `scripts/fetch-url.sh` | `curl` a URL and extract text content |
-| **Bonus: Hooks** | `PreToolUse(Bash)` | Ensure no sensitive data leaks in curl commands |
+| **L4 Launcher** | `justfile` recipe `research` | Invoke `claude` with research plugin + budget cap |
+| **L3 Orchestration** | `.claude/commands/research.md` | Accept topic from user, delegate |
+| **L2 Workflow** | `.claude/agents/research-analyst.md` | Plan research strategy, synthesize findings, produce report |
+| **L1 SOP / Capability** | `.claude/skills/web-research/SKILL.md` | Fetch and extract content from web sources |
+| **L1 SOP / Capability** | `.claude/skills/report-writer/SKILL.md` | Structure findings into formatted markdown |
+| **L0 Tools & Primitives** | `scripts/fetch-url.sh` | `curl` a URL and extract text content |
+| **Bonus Guardrail** | `PreToolUse(Bash)` hook | Ensure no sensitive data leaks in curl commands |
 
 ### Flow
 
@@ -205,7 +211,7 @@ The **security-scanner** skill is reusable -- it can serve the CI/CD review agen
 
 ### Key Insight
 
-The agent is where **synthesis** happens. The web-research skill fetches content, but it does not decide what is important or how to combine findings. That judgment is the agent's job. This separation keeps the skill reusable and the agent focused on reasoning.
+The L2 workflow is where **synthesis** happens. The web-research SOP fetches content, but it does not decide what is important or how to combine findings. That judgment is the workflow's job. This separation keeps the SOP reusable and the workflow focused on reasoning.
 
 ---
 
@@ -219,13 +225,14 @@ The agent is where **synthesis** happens. The web-research skill fetches content
 
 | Layer | Artifact | Responsibility |
 |-------|----------|---------------|
-| **Layer 4: Command** | `.claude/commands/code-review.md` | Accept PR number or branch, delegate |
-| **Layer 3: Agent** | `.claude/agents/code-reviewer.md` | Examine diffs, check patterns, provide feedback |
-| **Layer 2: Skill** | `.claude/skills/diff-analyzer/SKILL.md` | Extract and parse git diffs |
-| **Layer 2: Skill** | `.claude/skills/test-runner/SKILL.md` | Run test suites and report results |
-| **Layer 1: Scripts** | `scripts/get-diff.sh` | `git diff` with appropriate flags |
-| **Layer 1: Scripts** | `scripts/run-tests.sh` | Execute test suite, capture output |
-| **Bonus: Hooks** | `PostToolUse(Write)` | Auto-lint any files the reviewer suggests modifying |
+| **L4 Launcher** | `justfile` recipe `code-review` | Invoke `claude` from a git pre-push hook or CI |
+| **L3 Orchestration** | `.claude/commands/code-review.md` | Accept PR number or branch, delegate |
+| **L2 Workflow** | `.claude/agents/code-reviewer.md` | Examine diffs, check patterns, provide feedback |
+| **L1 SOP / Capability** | `.claude/skills/diff-analyzer/SKILL.md` | Extract and parse git diffs |
+| **L1 SOP / Capability** | `.claude/skills/test-runner/SKILL.md` | Run test suites and report results |
+| **L0 Tools & Primitives** | `scripts/get-diff.sh` | `git diff` with appropriate flags |
+| **L0 Tools & Primitives** | `scripts/run-tests.sh` | Execute test suite, capture output |
+| **Bonus Guardrail** | `PostToolUse(Write)` hook | Auto-lint any files the reviewer suggests modifying |
 
 ### Flow
 
@@ -243,7 +250,7 @@ The agent is where **synthesis** happens. The web-research skill fetches content
 
 ### Key Insight
 
-The **test-runner** skill is completely independent from code review. It can be used by a CI agent, a deployment agent, or a developer running `/test`. Skills are composable across agents -- that is the architectural payoff of keeping them atomic.
+The **test-runner** SOP is completely independent from code review. It can be used by a CI workflow, a deployment workflow, or a developer running `/test`. SOPs are composable across workflows — that is the architectural payoff of keeping them atomic.
 
 ---
 
@@ -259,7 +266,7 @@ In every example above, hooks provide enforcement that no individual layer handl
 | `Stop` | Clean up temporary files (screenshots, diffs) | UI Review, Research |
 | `SubagentStop` | Validate subagent output format | Research (multi-source) |
 
-Hooks are the **safety net**. They ensure that no matter which command, agent, or skill is running, the system-wide rules are enforced.
+Guardrails are the **safety net**. They ensure that no matter which orchestration, workflow, or SOP is running, the system-wide rules are enforced.
 
 ---
 
@@ -268,10 +275,12 @@ Hooks are the **safety net**. They ensure that no matter which command, agent, o
 Every example follows the same structural pattern:
 
 ```
-User Intent -> Thin Command -> Reasoning Agent -> Atomic Skills -> Deterministic Scripts
-                                                                        ^
-                                                                        |
-                                                    Hooks enforce rules across all layers
+[optional] Launcher (L4) ── claude --agent … -p "…"
+                                  │
+User Intent → L3 Orchestration → L2 Workflow → L1 SOPs → L0 Tools & Primitives
+                                                                  ^
+                                                                  │
+                                Guardrails (Bonus) enforce rules across all layers
 ```
 
-The variation is in the **domain**, not the **architecture**. Browser testing, CI/CD review, research, and code review all look different on the surface but share the same 4-layer skeleton. Once you internalize this pattern, you can design new workflows by filling in the layers rather than starting from scratch.
+The variation is in the **domain**, not the **architecture**. Browser testing, CI/CD review, research, and code review all look different on the surface but share the same skeleton. Once you internalize this pattern, you can design new systems by filling in the layers rather than starting from scratch.

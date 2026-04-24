@@ -383,23 +383,23 @@ This hierarchy is deliberate. Safety-critical constraints should not depend on t
 
 ```mermaid
 graph TB
-    subgraph "Layer 4: Commands"
+    subgraph "L3: Orchestration (Commands)"
         C[/ui-review/]
     end
 
-    subgraph "Layer 3: Agents"
+    subgraph "L2: Workflows (Agents)"
         A[browser-qa]
     end
 
-    subgraph "Layer 2: Skills"
+    subgraph "L1: SOPs / Capabilities (Skills)"
         S[playwright-browser]
     end
 
-    subgraph "Layer 1: Scripts"
+    subgraph "L0: Tools & Primitives (Scripts)"
         R[setup.sh / capture.sh]
     end
 
-    subgraph "Hooks: Enforcement"
+    subgraph "Bonus: Guardrails (Hooks)"
         H1[PreToolUse: validate-bash.py]
         H2[PostToolUse: post-write-lint.sh]
         H3[Stop: cleanup-screenshots.sh]
@@ -421,12 +421,12 @@ graph TB
     style H4 fill:#fff9c4
 ```
 
-Each layer does its job. Hooks make sure the jobs are done safely. Together they form a complete system where:
+Each layer does its job. Guardrails make sure the jobs are done safely. Together they form a complete system where:
 
-* **Commands** are thin and discoverable
-* **Agents** reason and orchestrate
-* **Skills** perform atomic operations
-* **Scripts** execute deterministically
-* **Hooks** enforce rules that no single layer owns
+* **L3 Orchestration** is thin and discoverable
+* **L2 Workflows** reason and sequence
+* **L1 SOPs** document and perform atomic capabilities
+* **L0 Tools & Primitives** execute deterministically
+* **Guardrails** enforce rules that no single layer owns
 
 This is defense in depth for AI-assisted automation.
